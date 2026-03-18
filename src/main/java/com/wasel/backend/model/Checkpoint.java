@@ -1,4 +1,4 @@
 package com.wasel.backend.model;
 
-public class Checkpoint {
+public class Checkpoint {//
 }
