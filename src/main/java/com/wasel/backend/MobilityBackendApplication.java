@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
-
+//masa
 
 @SpringBootApplication
 public class MobilityBackendApplication {
