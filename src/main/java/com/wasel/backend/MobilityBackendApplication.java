@@ -13,7 +13,7 @@ public class MobilityBackendApplication {
     public static void main(String[] args) {
 
         SpringApplication.run(MobilityBackendApplication.class, args);
-
+// changes khadeja made
         try {
 
             Connection conn = DriverManager.getConnection(
@@ -24,7 +24,7 @@ public class MobilityBackendApplication {
 
             Statement stmt = conn.createStatement();
 
-            stmt.executeUpdate("INSERT INTO \"user\" (id) VALUES (44)");
+            stmt.executeUpdate("INSERT INTO \"user\" (id) VALUES (777)");
 
             System.out.println("Insert successful!");
 
