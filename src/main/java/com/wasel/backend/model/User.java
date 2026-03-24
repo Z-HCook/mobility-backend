@@ -22,7 +22,9 @@ public class User {        // اسم الكلاس Capital Letter، convention ف
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
+    
+    @Column(nullable = false)
+    private String password;
     // ===== Constructor فارغ =====
     public User() { }
 
@@ -33,6 +35,14 @@ public class User {        // اسم الكلاس Capital Letter، convention ف
         this.email = email;
         this.role = role;
         this.createdAt = createdAt;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     // ===== Getters =====
@@ -75,5 +85,10 @@ public class User {        // اسم الكلاس Capital Letter، convention ف
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+
+    public User orElseThrow(Object userNotFound) {
+        return null;
     }
 }
