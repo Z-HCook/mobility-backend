@@ -1,38 +1,22 @@
 package com.wasel.backend;
 
+import com.wasel.backend.model.User;
+import com.wasel.backend.repository.UserRepository;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
-//masa
+
 
 @SpringBootApplication
 public class MobilityBackendApplication {
 
     public static void main(String[] args) {
-
         SpringApplication.run(MobilityBackendApplication.class, args);
-
-        try {
-
-            Connection conn = DriverManager.getConnection(
-                    "jdbc:postgresql://aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres",
-                    "postgres.briotpjealadhecdcuah",
-                    "12219461@kmdz"
-            );
-
-            Statement stmt = conn.createStatement();
-
-            stmt.executeUpdate("INSERT INTO \"user\" (id) VALUES (009)");
-
-            System.out.println("Insert successful!");
-
-            conn.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
-}
+
+    }
