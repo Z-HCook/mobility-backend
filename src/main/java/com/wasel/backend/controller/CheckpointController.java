@@ -17,8 +17,8 @@ public class CheckpointController {
     }
 
     @GetMapping
-    public List<Checkpoint> getAllCheckpoints() {
-        return checkpointService.getAllCheckpoints();
+    public List<Checkpoint> getCheckpointhistoryinaperiodoftime() {
+        return checkpointService.getCheckpointhistoryinaperiodoftime;
     }
 
     @GetMapping("/{id}")
