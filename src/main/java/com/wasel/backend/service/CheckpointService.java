@@ -10,6 +10,7 @@ import java.util.List;
 public class CheckpointService {
 
     private final CheckpointRepository checkpointRepository;
+    public List<Checkpoint> getCheckpointhistoryinaperiodoftime;
 
     public CheckpointService(CheckpointRepository checkpointRepository) {
         this.checkpointRepository = checkpointRepository;
