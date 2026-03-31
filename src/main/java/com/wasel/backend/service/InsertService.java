@@ -1,0 +1,37 @@
+package com.wasel.backend.service;
+
+
+import com.wasel.backend.dto.RegisterRequest;
+import com.wasel.backend.model.User;
+import com.wasel.backend.repository.UserRepository;
+import org.springframework.stereotype.Service;
+
+@Service
+public class InsertService {
+
+    private final UserRepository userRepository;
+
+    public InsertService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public String register(RegisterRequest request) {
+
+
+        if (userRepository.findByEmail(request.email).isPresent()) {
+            return "Email already exists";
+        }
+
+
+        User user = new User();
+        user.setName(request.name);
+        user.setEmail(request.email);
+        user.setPassword(request.password);
+        user.setRole(request.role);
+
+
+        userRepository.save(user);
+
+        return "User registered successfully";
+    }
+}
