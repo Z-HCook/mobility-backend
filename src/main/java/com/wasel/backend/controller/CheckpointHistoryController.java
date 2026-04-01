@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/checkpoints")
+@RequestMapping("/ch")
 public class CheckpointHistoryController {
 
     private final CheckpointHistoryService service;

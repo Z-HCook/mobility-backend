@@ -10,10 +10,10 @@ public class Subscriptions {
 
     @Id
     @GeneratedValue
-    private UUID id;
+    private int id;
 
     @Column(name = "user_id")
-    private UUID userId;
+    private int userId;
 
     private String region;
 
@@ -30,11 +30,11 @@ public class Subscriptions {
     public Subscriptions() {}
 
     // Getters & Setters
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public UUID getUserId() { return userId; }
-    public void setUserId(UUID userId) { this.userId = userId; }
+    public int getUserId() { return userId; }
+    public void setUserId(int userId) { this.userId = userId; }
 
     public String getRegion() { return region; }
     public void setRegion(String region) { this.region = region; }

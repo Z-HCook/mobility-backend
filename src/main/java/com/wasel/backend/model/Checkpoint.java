@@ -29,7 +29,7 @@ public class Checkpoint {
     private User createdBy;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     // ===== Constructors =====
 

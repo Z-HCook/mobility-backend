@@ -1,34 +1,43 @@
 package com.wasel.backend.service;
 
+import com.wasel.backend.dto.CheckpointRequest;
 import com.wasel.backend.model.Checkpoint;
+import com.wasel.backend.model.User;
 import com.wasel.backend.repository.CheckpointRepository;
+import com.wasel.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class CheckpointService {
 
     private final CheckpointRepository checkpointRepository;
-    public List<Checkpoint> getCheckpointhistoryinaperiodoftime;
+    private final UserRepository userRepository;
 
-    public CheckpointService(CheckpointRepository checkpointRepository) {
+    public CheckpointService(CheckpointRepository checkpointRepository,
+                             UserRepository userRepository) {
         this.checkpointRepository = checkpointRepository;
+        this.userRepository = userRepository;
     }
 
-    public List<Checkpoint> getAllCheckpoints() {
-        return checkpointRepository.findAll();
-    }
+    public String createCheckpoint(CheckpointRequest request) {
 
-    public Checkpoint getCheckpointById(int id) {
-        return checkpointRepository.findById(id).orElse(null);
-    }
+        // ✅ validation
+        if (request.getName() == null || request.getName().isEmpty()) {
+            throw new RuntimeException("Checkpoint name is required");
+        }
 
-    public Checkpoint createCheckpoint(Checkpoint checkpoint) {
-        return checkpointRepository.save(checkpoint);
-    }
+        User user = userRepository.findById(request.getCreatedBy())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    public void deleteCheckpoint(int id) {
-        checkpointRepository.deleteById(id);
+        Checkpoint checkpoint = new Checkpoint();
+        checkpoint.setName(request.getName());
+        checkpoint.setLatitude(request.getLatitude());
+        checkpoint.setLongitude(request.getLongitude());
+        checkpoint.setDescription(request.getDescription());
+        checkpoint.setCreatedBy(user);
+
+        checkpointRepository.save(checkpoint);
+
+        return "Checkpoint created successfully";
     }
 }

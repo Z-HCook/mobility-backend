@@ -24,6 +24,7 @@ public class Report {
 
     private String status;
 
+
     @Column(name = "credibility_score")
     private Float credibilityScore;
 
@@ -47,6 +48,8 @@ public class Report {
 
     private String type;
 
+    @Column(name = "duplicate_count")
+    private int duplicateCount;
     // Constructors
     public Report() {}
 
@@ -95,4 +98,13 @@ public class Report {
 
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
+
+    public int getDuplicateCount() {
+        return duplicateCount;
+    }
+
+    public void setDuplicateCount(int duplicateCount) {
+        this.duplicateCount = duplicateCount;
+    }
+
 }
