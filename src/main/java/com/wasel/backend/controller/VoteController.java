@@ -1,4 +1,4 @@
- package com.wasel.backend.controller;
+package com.wasel.backend.controller;
 
 import com.wasel.backend.dto.VoteRequest;
 import com.wasel.backend.service.VoteService;
