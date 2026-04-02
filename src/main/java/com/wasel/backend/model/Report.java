@@ -49,7 +49,7 @@ public class Report {
     private String type;
 
     @Column(name = "duplicate_count")
-    private int duplicateCount;
+    private Integer duplicateCount;
     // Constructors
     public Report() {}
 
@@ -99,11 +99,11 @@ public class Report {
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
 
-    public int getDuplicateCount() {
+    public Integer getDuplicateCount() {
         return duplicateCount;
     }
 
-    public void setDuplicateCount(int duplicateCount) {
+    public void setDuplicateCount(Integer duplicateCount) {
         this.duplicateCount = duplicateCount;
     }
 

@@ -1,6 +1,5 @@
 package com.wasel.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -10,35 +9,18 @@ public class Incident {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
-    @Column(name = "checkpoint_id")
-    @JsonProperty("checkpointId")
-    private Integer checkpointId;
-
-    @Column(nullable = false)
     private String title;
-
     private String description;
+    private String type;
+    private String severity;
+    private String status;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private IncidentType type;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Severity severity;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private IncidentStatus status;
-
-    @Column(name = "reported_by", nullable = false)
-    @JsonProperty("reportedBy")
+    @Column(name = "reported_by")
     private Integer reportedBy;
 
     @Column(name = "verified_by")
-    @JsonProperty("verifiedBy")
     private Integer verifiedBy;
 
     private Double latitude;
@@ -53,34 +35,12 @@ public class Incident {
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
 
-    // ===== Constructors =====
-    public Incident() { }
+    // ✅ Add default constructor
+    public Incident() {}
 
-    public Incident(String title, IncidentType type, Severity severity, IncidentStatus status, Integer reportedBy) {
-        this.title = title;
-        this.type = type;
-        this.severity = severity;
-        this.status = status;
-        this.reportedBy = reportedBy;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    @PrePersist
-    public void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        if (this.status == null) {
-            this.status = IncidentStatus.PENDING;
-        }
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    // ===== Getters & Setters =====
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    // ✅ Getters & Setters
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -88,23 +48,20 @@ public class Incident {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public IncidentType getType() { return type; }
-    public void setType(IncidentType type) { this.type = type; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
-    public Severity getSeverity() { return severity; }
-    public void setSeverity(Severity severity) { this.severity = severity; }
+    public String getSeverity() { return severity; }
+    public void setSeverity(String severity) { this.severity = severity; }
 
-    public IncidentStatus getStatus() { return status; }
-    public void setStatus(IncidentStatus status) { this.status = status; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
     public Integer getReportedBy() { return reportedBy; }
     public void setReportedBy(Integer reportedBy) { this.reportedBy = reportedBy; }
 
     public Integer getVerifiedBy() { return verifiedBy; }
     public void setVerifiedBy(Integer verifiedBy) { this.verifiedBy = verifiedBy; }
-
-    public Integer getCheckpointId() { return checkpointId; }
-    public void setCheckpointId(Integer checkpointId) { this.checkpointId = checkpointId; }
 
     public Double getLatitude() { return latitude; }
     public void setLatitude(Double latitude) { this.latitude = latitude; }
