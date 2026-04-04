@@ -10,7 +10,7 @@ public class Incident {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id; // استخدمنا Integer للسماح بـ null قبل الحفظ
 
     @Column(name = "checkpoint_id")
     @JsonProperty("checkpointId")
@@ -21,17 +21,14 @@ public class Incident {
 
     private String description;
 
-    // تم تغييرها إلى String لتتطابق مع اشتراكات المستخدمين
     @Column(nullable = false)
-    private String type;
+    private String type; // مثل: ROAD_CLOSURE, ACCIDENT
 
-    // تم تغييرها إلى String (مثل: LOW, MEDIUM, HIGH, CRITICAL)
     @Column(nullable = false)
-    private String severity;
+    private String severity; // مثل: LOW, MEDIUM, HIGH
 
-    // تم تغييرها إلى String (مثل: PENDING, VERIFIED, CLOSED)
     @Column(nullable = false)
-    private String status;
+    private String status; // مثل: PENDING, VERIFIED
 
     @Column(name = "reported_by", nullable = false)
     @JsonProperty("reportedBy")
@@ -53,14 +50,15 @@ public class Incident {
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
 
-    // ===== Constructors =====
+    // ✅ Constructors
     public Incident() { }
 
+    // ✅ Lifecycle Hooks (المسؤولة عن الوقت التلقائي)
     @PrePersist
     public void onCreate() {
         this.createdAt = LocalDateTime.now();
         if (this.status == null) {
-            this.status = "PENDING"; // قيمة افتراضية كنص
+            this.status = "PENDING";
         }
     }
 
@@ -69,9 +67,9 @@ public class Incident {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // ===== Getters & Setters =====
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    // ✅ Getters & Setters
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
