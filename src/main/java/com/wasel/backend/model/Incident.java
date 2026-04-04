@@ -10,7 +10,7 @@ public class Incident {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id; // استخدمنا Integer للسماح بـ null قبل الحفظ
 
     @Column(name = "checkpoint_id")
     @JsonProperty("checkpointId")
@@ -21,6 +21,17 @@ public class Incident {
 
     private String description;
 
+    @Column(nullable = false)
+    private String type; // مثل: ROAD_CLOSURE, ACCIDENT
+
+    @Column(nullable = false)
+    private String severity; // مثل: LOW, MEDIUM, HIGH
+
+    @Column(nullable = false)
+    private String status; // مثل: PENDING, VERIFIED
+
+    @Column(name = "reported_by", nullable = false)
+    @JsonProperty("reportedBy")
     private Integer reportedBy;
 
     @Column(name = "verified_by")
@@ -39,23 +50,15 @@ public class Incident {
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
 
-    // ===== Constructors =====
+    // ✅ Constructors
     public Incident() { }
 
-    public Incident(String title, IncidentType type, Severity severity, IncidentStatus status, Integer reportedBy) {
-        this.title = title;
-        this.type = type;
-        this.severity = severity;
-        this.status = status;
-        this.reportedBy = reportedBy;
-        this.createdAt = LocalDateTime.now();
-    }
-
+    // ✅ Lifecycle Hooks (المسؤولة عن الوقت التلقائي)
     @PrePersist
     public void onCreate() {
         this.createdAt = LocalDateTime.now();
         if (this.status == null) {
-            this.status = IncidentStatus.PENDING;
+            this.status = "PENDING";
         }
     }
 
@@ -64,9 +67,9 @@ public class Incident {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // ===== Getters & Setters =====
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    // ✅ Getters & Setters
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -74,14 +77,14 @@ public class Incident {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public IncidentType getType() { return type; }
-    public void setType(IncidentType type) { this.type = type; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
-    public Severity getSeverity() { return severity; }
-    public void setSeverity(Severity severity) { this.severity = severity; }
+    public String getSeverity() { return severity; }
+    public void setSeverity(String severity) { this.severity = severity; }
 
-    public IncidentStatus getStatus() { return status; }
-    public void setStatus(IncidentStatus status) { this.status = status; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
     public Integer getReportedBy() { return reportedBy; }
     public void setReportedBy(Integer reportedBy) { this.reportedBy = reportedBy; }
