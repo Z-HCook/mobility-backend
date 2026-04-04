@@ -17,12 +17,10 @@ public class CheckpointHistoryController {
         this.service = service;
     }
 
-
     @GetMapping("/{id}/history")
     public List<CheckpointHistory> getCheckpointHistory(@PathVariable Integer id) {
         return service.getByCheckpointId(id);
     }
-
 
     @GetMapping("/{id}/history/filter")
     public List<CheckpointHistory> getCheckpointHistoryByDate(

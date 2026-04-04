@@ -11,12 +11,10 @@ public class CheckpointHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // علاقة مع Checkpoint
     @ManyToOne
     @JoinColumn(name = "checkpoint_id", nullable = false)
     private Checkpoint checkpoint;
 
-    // علاقة مع Incident
     @ManyToOne
     @JoinColumn(name = "incident_id", nullable = false)
     private Incident incident;
@@ -24,7 +22,6 @@ public class CheckpointHistory {
     @Column(name = "ins_at")
     private LocalDateTime insAt;
 
-    // Constructors
     public CheckpointHistory() {}
 
     public CheckpointHistory(Checkpoint checkpoint, Incident incident, LocalDateTime insAt) {
@@ -33,7 +30,6 @@ public class CheckpointHistory {
         this.insAt = insAt;
     }
 
-    // Getters & Setters
     public Integer getId() {
         return id;
     }

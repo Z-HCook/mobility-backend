@@ -16,17 +16,16 @@ public class CheckpointHistoryService {
         this.checkpointHistoryRepository = checkpointHistoryRepository;
     }
 
-    // 🔹 كل الهيستوري لشيكبوينت معين
     public List<CheckpointHistory> getByCheckpointId(Integer checkpointId) {
-        return checkpointHistoryRepository.findByCheckpointId(checkpointId);
+        return checkpointHistoryRepository.findByCheckpoint_Id(checkpointId);
     }
 
-    // 🔹 الهيستوري ضمن فترة زمنية
     public List<CheckpointHistory> getByCheckpointIdAndDate(
             Integer checkpointId,
             LocalDateTime start,
             LocalDateTime end
     ) {
-        return checkpointHistoryRepository.findByCheckpointIdAndInsAtBetween(checkpointId, start, end);
+        return checkpointHistoryRepository.findByCheckpoint_IdAndInsAtBetween(
+                checkpointId, start, end);
     }
 }
