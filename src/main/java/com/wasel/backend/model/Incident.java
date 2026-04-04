@@ -21,17 +21,17 @@ public class Incident {
 
     private String description;
 
-    @Enumerated(EnumType.STRING)
+    // تم تغييرها إلى String لتتطابق مع اشتراكات المستخدمين
     @Column(nullable = false)
-    private IncidentType type;
+    private String type;
 
-    @Enumerated(EnumType.STRING)
+    // تم تغييرها إلى String (مثل: LOW, MEDIUM, HIGH, CRITICAL)
     @Column(nullable = false)
-    private Severity severity;
+    private String severity;
 
-    @Enumerated(EnumType.STRING)
+    // تم تغييرها إلى String (مثل: PENDING, VERIFIED, CLOSED)
     @Column(nullable = false)
-    private IncidentStatus status;
+    private String status;
 
     @Column(name = "reported_by", nullable = false)
     @JsonProperty("reportedBy")
@@ -56,20 +56,11 @@ public class Incident {
     // ===== Constructors =====
     public Incident() { }
 
-    public Incident(String title, IncidentType type, Severity severity, IncidentStatus status, Integer reportedBy) {
-        this.title = title;
-        this.type = type;
-        this.severity = severity;
-        this.status = status;
-        this.reportedBy = reportedBy;
-        this.createdAt = LocalDateTime.now();
-    }
-
     @PrePersist
     public void onCreate() {
         this.createdAt = LocalDateTime.now();
         if (this.status == null) {
-            this.status = IncidentStatus.PENDING;
+            this.status = "PENDING"; // قيمة افتراضية كنص
         }
     }
 
@@ -88,14 +79,14 @@ public class Incident {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public IncidentType getType() { return type; }
-    public void setType(IncidentType type) { this.type = type; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
-    public Severity getSeverity() { return severity; }
-    public void setSeverity(Severity severity) { this.severity = severity; }
+    public String getSeverity() { return severity; }
+    public void setSeverity(String severity) { this.severity = severity; }
 
-    public IncidentStatus getStatus() { return status; }
-    public void setStatus(IncidentStatus status) { this.status = status; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
     public Integer getReportedBy() { return reportedBy; }
     public void setReportedBy(Integer reportedBy) { this.reportedBy = reportedBy; }
