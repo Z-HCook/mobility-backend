@@ -1,5 +1,6 @@
 package com.wasel.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -9,18 +10,32 @@ public class Incident {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Integer id; // استخدمنا Integer للسماح بـ null قبل الحفظ
 
+    @Column(name = "checkpoint_id")
+    @JsonProperty("checkpointId")
+    private Integer checkpointId;
+
+    @Column(nullable = false)
     private String title;
-    private String description;
-    private String type;
-    private String severity;
-    private String status;
 
-    @Column(name = "reported_by")
+    private String description;
+
+    @Column(nullable = false)
+    private String type; // مثل: ROAD_CLOSURE, ACCIDENT
+
+    @Column(nullable = false)
+    private String severity; // مثل: LOW, MEDIUM, HIGH
+
+    @Column(nullable = false)
+    private String status; // مثل: PENDING, VERIFIED
+
+    @Column(name = "reported_by", nullable = false)
+    @JsonProperty("reportedBy")
     private Integer reportedBy;
 
     @Column(name = "verified_by")
+    @JsonProperty("verifiedBy")
     private Integer verifiedBy;
 
     private Double latitude;
@@ -35,8 +50,22 @@ public class Incident {
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
 
-    // ✅ Add default constructor
-    public Incident() {}
+    // ✅ Constructors
+    public Incident() { }
+
+    // ✅ Lifecycle Hooks (المسؤولة عن الوقت التلقائي)
+    @PrePersist
+    public void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        if (this.status == null) {
+            this.status = "PENDING";
+        }
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     // ✅ Getters & Setters
     public Integer getId() { return id; }
@@ -62,6 +91,9 @@ public class Incident {
 
     public Integer getVerifiedBy() { return verifiedBy; }
     public void setVerifiedBy(Integer verifiedBy) { this.verifiedBy = verifiedBy; }
+
+    public Integer getCheckpointId() { return checkpointId; }
+    public void setCheckpointId(Integer checkpointId) { this.checkpointId = checkpointId; }
 
     public Double getLatitude() { return latitude; }
     public void setLatitude(Double latitude) { this.latitude = latitude; }
