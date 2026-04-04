@@ -17,6 +17,8 @@ public class IncidentVerificationService {
     private final ReportModerationLogRepository logRepo;
     private final CheckpointRepository checkpointRepo;
     private final CheckpointHistoryRepository checkpointHistoryRepo;
+    private final IncidentRepository incidentRepository;
+    private final AlertService alertService;
 
     public IncidentVerificationService(
             ReportRepository reportRepo,
@@ -24,7 +26,9 @@ public class IncidentVerificationService {
             IncidentRepository incidentRepo,
             ReportModerationLogRepository logRepo,
             CheckpointRepository checkpointRepo,
-            CheckpointHistoryRepository checkpointHistoryRepo
+            CheckpointHistoryRepository checkpointHistoryRepo,
+            IncidentRepository incidentRepository,
+            AlertService alertService
     ) {
         this.reportRepo = reportRepo;
         this.userRepo = userRepo;
@@ -32,6 +36,8 @@ public class IncidentVerificationService {
         this.logRepo = logRepo;
         this.checkpointRepo = checkpointRepo;
         this.checkpointHistoryRepo = checkpointHistoryRepo;
+        this.incidentRepository = incidentRepository;
+        this.alertService = alertService;
     }
 
     @Transactional
@@ -75,6 +81,11 @@ public class IncidentVerificationService {
         incident.setCreatedAt(LocalDateTime.now());
         incident.setUpdatedAt(LocalDateTime.now());
         incidentRepo.save(incident); // ✔️ حفظ Incident أولاً
+
+        Incident savedIncident = null;
+        alertService.createAlertsForIncident(savedIncident);
+
+
 
         // 7️⃣ ربط التقرير بالـ Incident
         report.setStatus("verified");
