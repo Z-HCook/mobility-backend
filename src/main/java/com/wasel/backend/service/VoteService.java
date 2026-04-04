@@ -1,5 +1,4 @@
-
-package com.wasel.backend.service;
+ package com.wasel.backend.service;
 
 import com.wasel.backend.dto.VoteRequest;
 import com.wasel.backend.model.*;
@@ -16,17 +15,20 @@ public class VoteService {
     private final ReportRepository reportRepo;
     private final UserRepository userRepo;
     private final ReportModerationLogRepository logRepo;
+    private final UserActivityRepository activityRepo;
 
     public VoteService(
             ReportVoteRepository voteRepo,
             ReportRepository reportRepo,
             UserRepository userRepo,
-            ReportModerationLogRepository logRepo
+            ReportModerationLogRepository logRepo,
+            UserActivityRepository activityRepo
     ) {
         this.voteRepo = voteRepo;
         this.reportRepo = reportRepo;
         this.userRepo = userRepo;
         this.logRepo = logRepo;
+        this.activityRepo = activityRepo;
     }
 
     public String vote(VoteRequest request) {
@@ -64,7 +66,7 @@ public class VoteService {
         vote.setVoteType(request.voteType);
         vote.setCreatedAt(LocalDateTime.now());
 
-        voteRepo.save(vote);
+        vote = voteRepo.save(vote);
 
         // update credibility score
         List<ReportVote> votes =
@@ -88,6 +90,16 @@ public class VoteService {
         log.setCreatedAt(LocalDateTime.now());
 
         logRepo.save(log);
+
+        // save user activity
+        UserActivity activity = new UserActivity();
+        activity.setUserId(request.userId);
+        activity.setReportId(request.reportId);
+        activity.setVoteId(vote.getId());
+        activity.setActionType("VOTE");
+        activity.setCreatedAt(LocalDateTime.now());
+
+        activityRepo.save(activity);
 
         return "Vote added successfully";
     }

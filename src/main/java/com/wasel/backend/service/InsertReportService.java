@@ -1,9 +1,12 @@
+
 package com.wasel.backend.service;
 
 import com.wasel.backend.dto.InsertReportRequest;
 import com.wasel.backend.model.Report;
 import com.wasel.backend.model.User;
+import com.wasel.backend.model.UserActivity;
 import com.wasel.backend.repository.ReportRepository;
+import com.wasel.backend.repository.UserActivityRepository;
 import com.wasel.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -17,10 +20,16 @@ public class InsertReportService {
 
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
+    private final UserActivityRepository activityRepository;
 
-    public InsertReportService(ReportRepository reportRepository, UserRepository userRepository) {
+    public InsertReportService(
+            ReportRepository reportRepository,
+            UserRepository userRepository,
+            UserActivityRepository activityRepository
+    ) {
         this.reportRepository = reportRepository;
         this.userRepository = userRepository;
+        this.activityRepository = activityRepository;
     }
 
     // حساب المسافة بالكيلومتر
@@ -32,7 +41,7 @@ public class InsertReportService {
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c; // distance in km
+        return R * c;
     }
 
     // إيجاد root report
@@ -52,23 +61,31 @@ public class InsertReportService {
             return "User not found";
         }
 
+
+
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime start = now.minusMinutes(30);
         LocalDateTime end = now.plusMinutes(30);
 
-        // 2️⃣ منع نفس المستخدم يكرر نفس النوع ضمن نفس الموقع
+        // 3️⃣ منع نفس المستخدم يكرر نفس النوع ضمن نفس الموقع
         List<Report> recentUserReports = reportRepository.findSimilarReportsByUser(
                 request.userId, request.category, start, end
         );
 
         for (Report r : recentUserReports) {
-            double dist = distance(request.latitude, request.longitude, r.getLatitude(), r.getLongitude());
-            if (dist < 0.2) { // 200 متر
+            double dist = distance(
+                    request.latitude,
+                    request.longitude,
+                    r.getLatitude(),
+                    r.getLongitude()
+            );
+
+            if (dist < 0.2) {
                 return "You already reported this recently";
             }
         }
 
-        // 3️⃣ إيجاد duplicates محتملة من المستخدمين الآخرين
+        // 4️⃣ إيجاد duplicates محتملة من المستخدمين الآخرين
         List<Report> candidates = reportRepository.findSimilarReports(
                 request.category, start, end
         );
@@ -76,14 +93,20 @@ public class InsertReportService {
         Report matchedReport = null;
 
         for (Report r : candidates) {
-            double dist = distance(request.latitude, request.longitude, r.getLatitude(), r.getLongitude());
+            double dist = distance(
+                    request.latitude,
+                    request.longitude,
+                    r.getLatitude(),
+                    r.getLongitude()
+            );
+
             if (dist < 0.2) {
-                matchedReport = getRootReport(r); // نستخدم root
+                matchedReport = getRootReport(r);
                 break;
             }
         }
 
-        // 4️⃣ إنشاء التقرير الجديد
+        // 5️⃣ إنشاء التقرير الجديد
         Report report = new Report();
         report.setUserId(request.userId);
         report.setCategory(request.category);
@@ -97,7 +120,6 @@ public class InsertReportService {
         report.setIsPromoted(false);
         report.setCreatedAt(now);
         report.setUpdatedAt(now);
-
 
         if (matchedReport != null) {
 
@@ -117,13 +139,30 @@ public class InsertReportService {
             if (newScore >= 15) {
                 root.setIsPromoted(true);
             }
+            // 2️⃣ abuse prevention
+            int activityCount = activityRepository.countByUserId(request.userId);
 
-            reportRepository.save(root);
+            if (activityCount < 5) {
+                return "User is not active enough to create reports";
+            }
+            else {
+                reportRepository.save(root);
+            }
         } else {
-            report.setDuplicateCount(0); // مهم
+            report.setDuplicateCount(0);
         }
 
-        reportRepository.save(report);
+        // 6️⃣ حفظ التقرير
+        report = reportRepository.save(report);
+
+        // 7️⃣ تسجيل activity
+        UserActivity activity = new UserActivity();
+        activity.setUserId(request.userId);
+        activity.setReportId(report.getId());
+        activity.setActionType("REPORT_CREATED");
+        activity.setCreatedAt(LocalDateTime.now());
+
+        activityRepository.save(activity);
 
         return "Report inserted successfully";
     }
