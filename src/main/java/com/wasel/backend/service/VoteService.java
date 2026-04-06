@@ -3,6 +3,8 @@
 import com.wasel.backend.dto.VoteRequest;
 import com.wasel.backend.model.*;
 import com.wasel.backend.repository.*;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -31,6 +33,11 @@ public class VoteService {
         this.activityRepo = activityRepo;
     }
 
+    // ✅ عند التصويت، نفرغ كاش التقارير لأن الـ Score تغير، ونفرغ كاش نشاط المستخدم
+    @Caching(evict = {
+            @CacheEvict(value = "reports", allEntries = true),
+            @CacheEvict(value = "userActivities", key = "#request.userId")
+    })
     public String vote(VoteRequest request) {
 
         // validation 1: user exists

@@ -5,6 +5,7 @@ import com.wasel.backend.model.Subscriptions;
 import com.wasel.backend.model.Incident;
 import com.wasel.backend.repository.AlertRepository;
 import com.wasel.backend.repository.SubscriptionRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -42,6 +43,13 @@ public class AlertService {
                 }
             }
         }
+    }
+
+    // ✅ أضفنا هذه الدالة لتخزين المشتركين في الكاش بناءً على نوع الحادث
+    // سيتم حفظ القائمة في ذاكرة النظام وتقليل الضغط على قاعدة البيانات
+    @Cacheable(value = "subscribers", key = "#incidentType")
+    public List<Subscriptions> getSubscribersByType(String incidentType) {
+        return subscriptionRepository.findByIncidentType(incidentType);
     }
 
     private void saveAlert(Incident incident, Subscriptions sub) {

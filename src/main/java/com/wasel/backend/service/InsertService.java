@@ -4,6 +4,7 @@ package com.wasel.backend.service;
 import com.wasel.backend.dto.RegisterRequest;
 import com.wasel.backend.model.User;
 import com.wasel.backend.repository.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,6 +16,9 @@ public class InsertService {
         this.userRepository = userRepository;
     }
 
+    // ✅ نمسح أي كاش متعلق بالمستخدمين عند تسجيل مستخدم جديد
+    // استخدمنا البريد الإلكتروني كمفتاح لأنه وسيلة التحقق الأساسية
+    @CacheEvict(value = "users", key = "#request.email")
     public String register(RegisterRequest request) {
 
 

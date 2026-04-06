@@ -5,6 +5,7 @@ import com.wasel.backend.model.Checkpoint;
 import com.wasel.backend.model.User;
 import com.wasel.backend.repository.CheckpointRepository;
 import com.wasel.backend.repository.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,7 +19,9 @@ public class CheckpointService {
         this.checkpointRepository = checkpointRepository;
         this.userRepository = userRepository;
     }
-
+    // ✅ عند إنشاء حاجز جديد، نقوم بمسح الكاش المسمى "checkpoints"
+    // لضمان أن المستخدم سيرى القائمة المحدثة في المرة القادمة.
+    @CacheEvict(value = "checkpoints", allEntries = true)
     public String createCheckpoint(CheckpointRequest request) {
 
         // ✅ validation

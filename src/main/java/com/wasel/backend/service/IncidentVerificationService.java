@@ -3,6 +3,8 @@ package com.wasel.backend.service;
 import com.wasel.backend.dto.VerifyReportRequest;
 import com.wasel.backend.model.*;
 import com.wasel.backend.repository.*;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,12 @@ public class IncidentVerificationService {
     }
 
     @Transactional
+    // ✅ نستخدم @Caching لأننا نريد مسح أكثر من مخزن (Incidents و History)
+    @Caching(evict = {
+            @CacheEvict(value = "incidents", allEntries = true),
+            @CacheEvict(value = "checkpointHistory", allEntries = true),
+            @CacheEvict(value = "checkpointHistoryRange", allEntries = true)
+    })
     public String verifyReport(VerifyReportRequest request) {
 
         // 1️⃣ جلب التقرير
@@ -82,8 +90,7 @@ public class IncidentVerificationService {
         incident.setUpdatedAt(LocalDateTime.now());
         incidentRepo.save(incident); // ✔️ حفظ Incident أولاً
 
-        Incident savedIncident = null;
-        alertService.createAlertsForIncident(savedIncident);
+        alertService.createAlertsForIncident(incident);
 
 
 
