@@ -10,6 +10,12 @@ public class AppConfig {
     @Bean
     public RestTemplate restTemplate() {
 
-        return new RestTemplate();
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+
+        // ⏱️ Timeout settings
+        factory.setConnectTimeout(5000); // 5 ثواني للاتصال
+        factory.setReadTimeout(5000);    // 5 ثواني للقراءة
+
+        return new RestTemplate(factory);
     }
 }
