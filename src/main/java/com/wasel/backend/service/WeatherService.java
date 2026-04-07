@@ -12,10 +12,10 @@ public class WeatherService {
     private final RestTemplate restTemplate;
     private final String API_KEY = "3b49dfc326c6f978b81e8b54210087fd";
 
+    // 🌟 Constructor injection للـ RestTemplate
     public WeatherService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
-
     public String getWeather(double lat, double lon) {
 
         String url = "https://api.openweathermap.org/data/2.5/weather?lat="
@@ -23,6 +23,7 @@ public class WeatherService {
 
         try {
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
             if (response == null || !response.containsKey("weather")) {
                 return "Unknown";
             }
@@ -36,15 +37,18 @@ public class WeatherService {
 
             return (String) weatherList.get(0).get("main");
 
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
+            // ⚠️ يعالج التايم اوت وأي خطأ آخر
             return "Weather service unavailable (timeout or error)";
         }
     }
 
-    public double applyWeatherImpact(String weatherStart,
-                                     String weatherEnd,
-                                     double duration,
-                                     List<String> factors) {
+    public double applyWeatherImpact(
+            String weatherStart,
+            String weatherEnd,
+            double duration,
+            List<String> factors) {
 
         if ("Rain".equalsIgnoreCase(weatherStart) || "Rain".equalsIgnoreCase(weatherEnd)) {
             duration += 5;
