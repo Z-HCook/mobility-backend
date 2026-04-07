@@ -68,7 +68,7 @@ public class RoutingService {
 
             double radius = cp.getRadius() > 0 ? cp.getRadius() : 0.5;
             List<double[]> points =generateCirclePoints(cp.getLat(), cp.getLng(), radius, 8);
-            points.removeIf(p -> p[0] == 0.0 && p[1] == 0.0); // ⬅️ هنا الفلترة
+            points.removeIf(p -> p[0] == 0.0 && p[1] == 0.0); //  هنا الفلتر
             avoidPoints.addAll(points);
         }
 
