@@ -1,7 +1,6 @@
 package com.wasel.backend.service;
 
 import com.wasel.backend.dto.RouteRequest;
-import com.wasel.backend.model.Incident;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -13,13 +12,11 @@ import java.util.Map;
 public class RoutingService {
 
     private final RestTemplate restTemplate;
+
     public RoutingService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    // ========================
-    // Route عادي بين نقطتين
-    // ========================
     public Map<String, Object> getRoute(double startLat, double startLng,
                                         double endLat, double endLng) {
 
@@ -31,16 +28,15 @@ public class RoutingService {
         return requestRoute(url);
     }
 
-    // ========================
-    // Route مع waypoints (لتجنب مناطق)
-    // ========================
-    public Map<String, Object> getRouteWithWaypoints(double startLat, double startLng, double endLat, double endLng, List<double[]> waypoints) {
+    public Map<String, Object> getRouteWithWaypoints(double startLat, double startLng,
+                                                     double endLat, double endLng,
+                                                     List<double[]> waypoints) {
 
         StringBuilder sb = new StringBuilder();
         sb.append(startLng).append(",").append(startLat);
         if (waypoints != null) {
             for (double[] wp : waypoints) {
-                sb.append(";").append(wp[1]).append(",").append(wp[0]); // lng,lat
+                sb.append(";").append(wp[1]).append(",").append(wp[0]); // lng, lat
             }
         }
         sb.append(";").append(endLng).append(",").append(endLat);
@@ -52,32 +48,32 @@ public class RoutingService {
         return requestRoute(url);
     }
 
-    public Map<String, Object> getRouteWithAvoid(RouteRequest request , List<String> factors) {
+    public Map<String, Object> getRouteWithAvoid(RouteRequest request, List<String> factors) {
         if (request.getStartLat() == 0.0 && request.getStartLng() == 0.0) {
             throw new RuntimeException("Start coordinates are invalid!");
         }
         if (request.getEndLat() == 0.0 && request.getEndLng() == 0.0) {
             throw new RuntimeException("End coordinates are invalid!");
         }
-         List<double[]> avoidPoints = new ArrayList<>();
+
+        List<double[]> avoidPoints = new ArrayList<>();
         if (request.getAvoidAreas() == null) {
             request.setAvoidAreas(new ArrayList<>());
         }
+
         for (RouteRequest.AvoidArea cp : request.getAvoidAreas()) {
-            factors.add(cp.getName() +" you have chosen");
+            factors.add(cp.getName() + " you have chosen");
 
             double radius = cp.getRadius() > 0 ? cp.getRadius() : 0.5;
-            List<double[]> points =generateCirclePoints(cp.getLat(), cp.getLng(), radius, 8);
-            points.removeIf(p -> p[0] == 0.0 && p[1] == 0.0); //  هنا الفلتر
+            List<double[]> points = generateCirclePoints(cp.getLat(), cp.getLng(), radius, 8);
+            points.removeIf(p -> p[0] == 0.0 && p[1] == 0.0);
             avoidPoints.addAll(points);
         }
 
         return getRouteWithWaypoints(request.getStartLat(), request.getStartLng(),
                 request.getEndLat(), request.getEndLng(), avoidPoints);
     }
-    // ========================
-    // تنفيذ الطلب للـ OSRM
-    // ========================
+
     private Map<String, Object> requestRoute(String url) {
         try {
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
@@ -86,13 +82,10 @@ public class RoutingService {
             }
             return response;
         } catch (Exception e) {
-            throw new RuntimeException("Routing service unavailable: " + e.getMessage());
+            throw new RuntimeException("Routing service unavailable (timeout or error): " + e.getMessage());
         }
     }
 
-    // ========================
-    // استخراج المسافة بالكيلومتر
-    // ========================
     public double extractDistance(Map<String, Object> response) {
         try {
             List routes = (List) response.get("routes");
@@ -103,9 +96,6 @@ public class RoutingService {
         }
     }
 
-    // ========================
-    // استخراج المدة بالدقائق
-    // ========================
     public double extractDuration(Map<String, Object> response) {
         try {
             List routes = (List) response.get("routes");
@@ -116,9 +106,6 @@ public class RoutingService {
         }
     }
 
-    // ========================
-    // توليد نقاط حول دائرة
-    // ========================
     public static List<double[]> generateCirclePoints(double lat, double lng, double radiusKm, int pointsCount) {
         List<double[]> points = new ArrayList<>();
         double earthRadius = 6371; // km
