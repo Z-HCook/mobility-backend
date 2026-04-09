@@ -1,6 +1,9 @@
 package com.wasel.backend.service;
 
 import com.wasel.backend.model.CheckpointHistory;
+import com.wasel.backend.model.Incident;
+import com.wasel.backend.model.Report;
+import com.wasel.backend.model.User;
 import com.wasel.backend.repository.CheckpointHistoryRepository;
 import org.springframework.stereotype.Service;
 
@@ -28,4 +31,17 @@ public class CheckpointHistoryService {
         return checkpointHistoryRepository.findByCheckpoint_IdAndInsAtBetween(
                 checkpointId, start, end);
     }
+
+    // ✅ SRP: logging فقط
+    public void logVerification(Report report, User moderator, Incident incident) {
+
+        CheckpointHistory log = new CheckpointHistory();
+        log.setInsAt(LocalDateTime.now());
+
+        checkpointHistoryRepository.save(log);
+    }
+
+
+
+
 }

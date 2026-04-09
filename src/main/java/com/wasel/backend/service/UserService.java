@@ -32,4 +32,17 @@ public class UserService {
     public void deleteUser(int id) {
         repo.deleteById(id);
     }
+
+    public User getModerator(Integer id) {
+
+        User user = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.getRole().equalsIgnoreCase("admin") &&
+                !user.getRole().equalsIgnoreCase("moderator")) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        return user;
+    }
 }

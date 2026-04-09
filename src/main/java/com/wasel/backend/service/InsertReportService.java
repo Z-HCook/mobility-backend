@@ -1,89 +1,38 @@
 package com.wasel.backend.service;
 
 import com.wasel.backend.dto.InsertReportRequest;
+import com.wasel.backend.model.Incident;
 import com.wasel.backend.model.Report;
-import com.wasel.backend.model.User;
 import com.wasel.backend.repository.ReportRepository;
-import com.wasel.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class InsertReportService {
 
     private final ReportRepository reportRepository;
-    private final UserRepository userRepository;
+    private final ReportValidationService validationService;
+    private final ReportDuplicateService duplicateService;
 
-    public InsertReportService(ReportRepository reportRepository, UserRepository userRepository) {
+    public InsertReportService(ReportRepository reportRepository,
+                               ReportValidationService validationService,
+                               ReportDuplicateService duplicateService) {
         this.reportRepository = reportRepository;
-        this.userRepository = userRepository;
-    }
-
-    // حساب المسافة بالكيلومتر
-    private double distance(double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371; // km
-        double latDistance = Math.toRadians(lat2 - lat1);
-        double lonDistance = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c; // distance in km
-    }
-
-    // إيجاد root report
-    private Report getRootReport(Report report) {
-        while (report.getDuplicateOf() != null) {
-            report = reportRepository.findById(report.getDuplicateOf()).orElse(report);
-        }
-        return report;
+        this.validationService = validationService;
+        this.duplicateService = duplicateService;
     }
 
     @Transactional
     public String insertReport(InsertReportRequest request) {
 
-        // 1️⃣ التحقق من المستخدم
-        Optional<User> userOpt = userRepository.findById(request.userId);
-        if (userOpt.isEmpty()) {
-            return "User not found";
-        }
+        // 1️⃣ validate user
+        validationService.validateUser(request.userId);
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime start = now.minusMinutes(30);
-        LocalDateTime end = now.plusMinutes(30);
 
-        // 2️⃣ منع نفس المستخدم يكرر نفس النوع ضمن نفس الموقع
-        List<Report> recentUserReports = reportRepository.findSimilarReportsByUser(
-                request.userId, request.category, start, end
-        );
-
-        for (Report r : recentUserReports) {
-            double dist = distance(request.latitude, request.longitude, r.getLatitude(), r.getLongitude());
-            if (dist < 0.2) { // 200 متر
-                return "You already reported this recently";
-            }
-        }
-
-        // 3️⃣ إيجاد duplicates محتملة من المستخدمين الآخرين
-        List<Report> candidates = reportRepository.findSimilarReports(
-                request.category, start, end
-        );
-
-        Report matchedReport = null;
-
-        for (Report r : candidates) {
-            double dist = distance(request.latitude, request.longitude, r.getLatitude(), r.getLongitude());
-            if (dist < 0.2) {
-                matchedReport = getRootReport(r); // نستخدم root
-                break;
-            }
-        }
-
-        // 4️⃣ إنشاء التقرير الجديد
+        // 2️⃣ create report
         Report report = new Report();
         report.setUserId(request.userId);
         report.setCategory(request.category);
@@ -98,33 +47,33 @@ public class InsertReportService {
         report.setCreatedAt(now);
         report.setUpdatedAt(now);
 
+        // 3️⃣ handle duplicate
+        duplicateService.handleDuplicate(report, now);
 
-        if (matchedReport != null) {
-
-            Report root = matchedReport;
-
-            report.setDuplicateOf(root.getId());
-
-            int duplicates = root.getDuplicateCount() + 1;
-
-            int votes = reportRepository.countVotes(root.getId());
-
-            double newScore = (duplicates * 1.0) + (votes * 0.7);
-
-            root.setDuplicateCount(duplicates);
-            root.setCredibilityScore((float) newScore);
-
-            if (newScore >= 15) {
-                root.setIsPromoted(true);
-            }
-
-            reportRepository.save(root);
-        } else {
-            report.setDuplicateCount(0); // مهم
-        }
-
+        // 4️⃣ save
         reportRepository.save(report);
 
         return "Report inserted successfully";
+    }
+
+    public Report getReport(Integer id) {
+        return reportRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Report not found"));
+    }
+
+    public void validate(Report report) {
+        if (!Boolean.TRUE.equals(report.getIsPromoted())) {
+            throw new RuntimeException("Report is not eligible");
+        }
+
+        if ("verified".equalsIgnoreCase(report.getStatus())) {
+            throw new RuntimeException("Already verified");
+        }
+    }
+
+    public void markAsVerified(Report report, Incident incident) {
+        report.setStatus("verified");
+        report.setLinkedIncidentId(incident.getId());
+        reportRepository.save(report);
     }
 }
