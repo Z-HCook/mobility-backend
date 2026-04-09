@@ -9,6 +9,8 @@ import com.wasel.backend.repository.ReportRepository;
 import com.wasel.backend.repository.UserActivityRepository;
 import com.wasel.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -53,6 +55,11 @@ public class InsertReportService {
     }
 
     @Transactional
+    // ✅ بمجرد إضافة تقرير، نفرغ كاش التقارير والنشاطات لضمان التحديث اللحظي
+    @Caching(evict = {
+            @CacheEvict(value = "reports", allEntries = true),
+            @CacheEvict(value = "userActivities", key = "#request.userId")
+    })
     public String insertReport(InsertReportRequest request) {
 
         // 1️⃣ التحقق من المستخدم
