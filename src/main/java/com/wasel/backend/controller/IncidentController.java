@@ -17,7 +17,6 @@ public class IncidentController {
 
     @PostMapping("/verify")
     public ResponseEntity<String> verify(@RequestBody VerifyReportRequest request) {
-        String result = service.verifyReport(request);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(service.verifyReport(request));
     }
 }
