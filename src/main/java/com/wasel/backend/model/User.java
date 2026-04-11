@@ -1,7 +1,8 @@
 package com.wasel.backend.model;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "users")  // مطابق لجدولك في الداتابيس
@@ -22,8 +23,9 @@ public class User {        // اسم الكلاس Capital Letter، convention ف
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-    
-    @Column(nullable = false)
+
+    @JsonIgnore
+   @Column(nullable = false)
     private String password;
     // ===== Constructor فارغ =====
     public User() { }
@@ -88,7 +90,4 @@ public class User {        // اسم الكلاس Capital Letter، convention ف
     }
 
 
-    public User orElseThrow(Object userNotFound) {
-        return null;
-    }
 }
