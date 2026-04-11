@@ -32,7 +32,8 @@ public class UserService {
 
     @Cacheable(value = "users", key = "#id")
     public User getUserById(int id) {
-        return repo.findById(id).orElse(null);
+        return repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     @Caching(evict = {
@@ -48,8 +49,9 @@ public class UserService {
         User user = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!user.getRole().equalsIgnoreCase("admin") &&
-                !user.getRole().equalsIgnoreCase("moderator")) {
+        if (user.getRole() == null ||
+                (!user.getRole().equalsIgnoreCase("admin") &&
+                        !user.getRole().equalsIgnoreCase("moderator"))) {
             throw new RuntimeException("Unauthorized");
         }
 
