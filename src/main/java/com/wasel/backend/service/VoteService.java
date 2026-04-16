@@ -1,4 +1,4 @@
- package com.wasel.backend.service;
+package com.wasel.backend.service;
 
 import com.wasel.backend.dto.VoteRequest;
 import com.wasel.backend.model.*;
@@ -33,51 +33,75 @@ public class VoteService {
         this.activityRepo = activityRepo;
     }
 
-    // ✅ عند التصويت، نفرغ كاش التقارير لأن الـ Score تغير، ونفرغ كاش نشاط المستخدم
     @Caching(evict = {
             @CacheEvict(value = "reports", allEntries = true),
             @CacheEvict(value = "userActivities", key = "#request.userId")
     })
     public String vote(VoteRequest request) {
 
-        // validation 1: user exists
-        if (!userRepo.existsById(request.userId)) {
-            return "User not found";
+        String validationResult = validateRequest(request);
+        if (validationResult != null) {
+            return validationResult;
         }
 
-        // validation 2: report exists
-        Report report = reportRepo.findById(request.reportId)
-                .orElse(null);
-
+        Report report = getReport(request.reportId);
         if (report == null) {
             return "Report not found";
         }
 
-        // validation 3: vote type
+        if (isDuplicateVote(request)) {
+            return "User already voted";
+        }
+
+        ReportVote vote = saveVote(request);
+
+        updateReportScore(request.reportId, report);
+
+        saveLog(request);
+
+        saveUserActivity(request, vote);
+
+        return "Vote added successfully";
+    }
+
+    private String validateRequest(VoteRequest request) {
+
+        if (!userRepo.existsById(request.userId)) {
+            return "User not found";
+        }
+
         if (request.voteType != 1 && request.voteType != -1) {
             return "Vote must be +1 or -1";
         }
 
-        // abuse prevention
-        if (voteRepo.findByUserIdAndReportId(
+        return null;
+    }
+
+    private Report getReport(int reportId) {
+        return reportRepo.findById(reportId).orElse(null);
+    }
+
+    private boolean isDuplicateVote(VoteRequest request) {
+        return voteRepo.findByUserIdAndReportId(
                 request.userId,
                 request.reportId
-        ).isPresent()) {
-            return "User already voted";
-        }
+        ).isPresent();
+    }
 
-        // save vote
+    private ReportVote saveVote(VoteRequest request) {
+
         ReportVote vote = new ReportVote();
         vote.setUserId(request.userId);
         vote.setReportId(request.reportId);
         vote.setVoteType(request.voteType);
         vote.setCreatedAt(LocalDateTime.now());
 
-        vote = voteRepo.save(vote);
+        return voteRepo.save(vote);
+    }
 
-        // update credibility score
-        List<ReportVote> votes =
-                voteRepo.findByReportId(request.reportId);
+    private void updateReportScore(int reportId, Report report) {
+
+        List<ReportVote> votes = voteRepo.findByReportId(reportId);
 
         int total = 0;
 
@@ -87,8 +111,10 @@ public class VoteService {
 
         report.setCredibilityScore((float) total);
         reportRepo.save(report);
+    }
 
-        // log history
+    private void saveLog(VoteRequest request) {
+
         ReportModerationLog log = new ReportModerationLog();
         log.setReportId(request.reportId);
         log.setModeratorId(request.userId);
@@ -97,8 +123,10 @@ public class VoteService {
         log.setCreatedAt(LocalDateTime.now());
 
         logRepo.save(log);
+    }
 
-        // save user activity
+    private void saveUserActivity(VoteRequest request, ReportVote vote) {
+
         UserActivity activity = new UserActivity();
         activity.setUserId(request.userId);
         activity.setReportId(request.reportId);
@@ -107,7 +135,5 @@ public class VoteService {
         activity.setCreatedAt(LocalDateTime.now());
 
         activityRepo.save(activity);
-
-        return "Vote added successfully";
     }
 }

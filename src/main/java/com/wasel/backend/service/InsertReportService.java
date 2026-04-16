@@ -1,4 +1,3 @@
-
 package com.wasel.backend.service;
 
 import com.wasel.backend.dto.InsertReportRequest;
@@ -34,50 +33,97 @@ public class InsertReportService {
         this.activityRepository = activityRepository;
     }
 
-    // حساب المسافة بالكيلومتر
     private double distance(double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371; // km
+        final int R = 6371;
         double latDistance = Math.toRadians(lat2 - lat1);
         double lonDistance = Math.toRadians(lon2 - lon1);
         double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+                + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2)
+                * Math.sin(lonDistance / 2);
+
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
         return R * c;
     }
 
-    // إيجاد root report
     private Report getRootReport(Report report) {
         while (report.getDuplicateOf() != null) {
-            report = reportRepository.findById(report.getDuplicateOf()).orElse(report);
+            report = reportRepository
+                    .findById(report.getDuplicateOf())
+                    .orElse(report);
         }
         return report;
     }
 
     @Transactional
-    // ✅ بمجرد إضافة تقرير، نفرغ كاش التقارير والنشاطات لضمان التحديث اللحظي
     @Caching(evict = {
             @CacheEvict(value = "reports", allEntries = true),
             @CacheEvict(value = "userActivities", key = "#request.userId")
     })
     public String insertReport(InsertReportRequest request) {
 
-        // 1️⃣ التحقق من المستخدم
-        Optional<User> userOpt = userRepository.findById(request.userId);
-        if (userOpt.isEmpty()) {
-            return "User not found";
+        String validationResult = validateUser(request.userId);
+        if (validationResult != null) {
+            return validationResult;
         }
-
-
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime start = now.minusMinutes(30);
         LocalDateTime end = now.plusMinutes(30);
 
-        // 3️⃣ منع نفس المستخدم يكرر نفس النوع ضمن نفس الموقع
-        List<Report> recentUserReports = reportRepository.findSimilarReportsByUser(
-                request.userId, request.category, start, end
-        );
+        if (hasRecentDuplicateFromSameUser(request, start, end)) {
+            return "You already reported this recently";
+        }
+
+        Report matchedReport = findMatchedReport(request, start, end);
+
+        String activityCheck = checkUserActivity(request.userId, matchedReport);
+        if (activityCheck != null) {
+            return activityCheck;
+        }
+
+        Report report = buildReport(request, now);
+
+        if (matchedReport != null) {
+            updateRootReport(matchedReport);
+            report.setDuplicateOf(matchedReport.getId());
+        } else {
+            report.setDuplicateCount(0);
+        }
+
+        report = reportRepository.save(report);
+
+        saveActivity(request.userId, report.getId());
+
+        return "Report inserted successfully";
+    }
+
+    private String validateUser(int userId) {
+
+        Optional<User> userOpt = userRepository.findById(userId);
+
+        if (userOpt.isEmpty()) {
+            return "User not found";
+        }
+
+        return null;
+    }
+
+    private boolean hasRecentDuplicateFromSameUser(
+            InsertReportRequest request,
+            LocalDateTime start,
+            LocalDateTime end
+    ) {
+
+        List<Report> recentUserReports =
+                reportRepository.findSimilarReportsByUser(
+                        request.userId,
+                        request.category,
+                        start,
+                        end
+                );
 
         for (Report r : recentUserReports) {
             double dist = distance(
@@ -88,16 +134,25 @@ public class InsertReportService {
             );
 
             if (dist < 0.2) {
-                return "You already reported this recently";
+                return true;
             }
         }
 
-        // 4️⃣ إيجاد duplicates محتملة من المستخدمين الآخرين
-        List<Report> candidates = reportRepository.findSimilarReports(
-                request.category, start, end
-        );
+        return false;
+    }
 
-        Report matchedReport = null;
+    private Report findMatchedReport(
+            InsertReportRequest request,
+            LocalDateTime start,
+            LocalDateTime end
+    ) {
+
+        List<Report> candidates =
+                reportRepository.findSimilarReports(
+                        request.category,
+                        start,
+                        end
+                );
 
         for (Report r : candidates) {
             double dist = distance(
@@ -108,13 +163,34 @@ public class InsertReportService {
             );
 
             if (dist < 0.2) {
-                matchedReport = getRootReport(r);
-                break;
+                return getRootReport(r);
             }
         }
 
-        // 5️⃣ إنشاء التقرير الجديد
+        return null;
+    }
+
+    private String checkUserActivity(int userId, Report matchedReport) {
+
+        if (matchedReport != null) {
+            int activityCount =
+                    activityRepository.countByUserId(userId);
+
+            if (activityCount < 5) {
+                return "User is not active enough to create reports";
+            }
+        }
+
+        return null;
+    }
+
+    private Report buildReport(
+            InsertReportRequest request,
+            LocalDateTime now
+    ) {
+
         Report report = new Report();
+
         report.setUserId(request.userId);
         report.setCategory(request.category);
         report.setDescription(request.description);
@@ -128,49 +204,36 @@ public class InsertReportService {
         report.setCreatedAt(now);
         report.setUpdatedAt(now);
 
-        if (matchedReport != null) {
+        return report;
+    }
 
-            Report root = matchedReport;
+    private void updateRootReport(Report root) {
 
-            report.setDuplicateOf(root.getId());
+        int duplicates = root.getDuplicateCount() + 1;
 
-            int duplicates = root.getDuplicateCount() + 1;
+        int votes = reportRepository.countVotes(root.getId());
 
-            int votes = reportRepository.countVotes(root.getId());
+        double newScore = (duplicates * 1.0) + (votes * 0.7);
 
-            double newScore = (duplicates * 1.0) + (votes * 0.7);
+        root.setDuplicateCount(duplicates);
+        root.setCredibilityScore((float) newScore);
 
-            root.setDuplicateCount(duplicates);
-            root.setCredibilityScore((float) newScore);
-
-            if (newScore >= 15) {
-                root.setIsPromoted(true);
-            }
-            // 2️⃣ abuse prevention
-            int activityCount = activityRepository.countByUserId(request.userId);
-
-            if (activityCount < 5) {
-                return "User is not active enough to create reports";
-            }
-            else {
-                reportRepository.save(root);
-            }
-        } else {
-            report.setDuplicateCount(0);
+        if (newScore >= 15) {
+            root.setIsPromoted(true);
         }
 
-        // 6️⃣ حفظ التقرير
-        report = reportRepository.save(report);
+        reportRepository.save(root);
+    }
 
-        // 7️⃣ تسجيل activity
+    private void saveActivity(int userId, int reportId) {
+
         UserActivity activity = new UserActivity();
-        activity.setUserId(request.userId);
-        activity.setReportId(report.getId());
+
+        activity.setUserId(userId);
+        activity.setReportId(reportId);
         activity.setActionType("REPORT_CREATED");
         activity.setCreatedAt(LocalDateTime.now());
 
         activityRepository.save(activity);
-
-        return "Report inserted successfully";
     }
 }
