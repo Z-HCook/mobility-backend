@@ -36,10 +36,8 @@ public class RouteEstimationService {
         double duration = routingService.extractDuration(response);
 
 
-        // Apply incidents
         duration = applyIncidentImpact(request, duration, factors);
 
-        // Apply weather
         String weatherStart = weatherService.getWeather(request.getStartLat(), request.getStartLng());
         String weatherEnd = weatherService.getWeather(request.getEndLat(), request.getEndLng());
         duration = weatherService.applyWeatherImpact(weatherStart, weatherEnd, duration, factors);

@@ -39,7 +39,6 @@ public class WeatherService {
 
         }
         catch (Exception e) {
-            // ⚠️ يعالج التايم اوت وأي خطأ آخر
             return "Weather service unavailable (timeout or error)";
         }
     }

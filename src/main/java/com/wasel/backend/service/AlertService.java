@@ -24,18 +24,15 @@ public class AlertService {
 
     @Transactional
     public void createAlertsForIncident(Incident incident) {
-        // 1. جلب المشتركين حسب النوع فقط (بدون isActive)
         List<Subscriptions> subscribers = subscriptionRepository.findByIncidentType(incident.getType());
 
         if (subscribers != null) {
             for (Subscriptions sub : subscribers) {
-                // 2. فحص المسافة الجغرافية (Haversine)
                 double distance = calculateDistance(
                         incident.getLatitude(), incident.getLongitude(),
                         sub.getLatitude(), sub.getLongitude()
                 );
 
-                // القطر المسموح (إذا لم يحدده المستخدم نعتبره 5 كم افتراضياً)
                 double radius = (sub.getRadiusKm() != null) ? sub.getRadiusKm() : 5.0;
 
                 if (distance <= radius) {
@@ -45,8 +42,6 @@ public class AlertService {
         }
     }
 
-    // ✅ أضفنا هذه الدالة لتخزين المشتركين في الكاش بناءً على نوع الحادث
-    // سيتم حفظ القائمة في ذاكرة النظام وتقليل الضغط على قاعدة البيانات
     @Cacheable(value = "subscribers", key = "#incidentType")
     public List<Subscriptions> getSubscribersByType(String incidentType) {
         return subscriptionRepository.findByIncidentType(incidentType);

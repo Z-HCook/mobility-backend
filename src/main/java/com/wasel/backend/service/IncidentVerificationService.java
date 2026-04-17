@@ -43,7 +43,7 @@ public class IncidentVerificationService {
     }
 
     @Transactional
-    // ✅ نستخدم @Caching لأننا نريد مسح أكثر من مخزن (Incidents و History)
+
     @Caching(evict = {
             @CacheEvict(value = "incidents", allEntries = true),
             @CacheEvict(value = "checkpointHistory", allEntries = true),
@@ -51,31 +51,25 @@ public class IncidentVerificationService {
     })
     public String verifyReport(VerifyReportRequest request) {
 
-        // 1️⃣ جلب التقرير
         Report report = reportRepo.findById(request.getReportId()).orElse(null);
         if (report == null) return "Report not found";
 
-        // 2️⃣ التأكد أنه promoted
         if (!Boolean.TRUE.equals(report.getIsPromoted())) {
             return "Report is not eligible for verification";
         }
 
-        // 3️⃣ جلب الـ moderator
         User moderator = userRepo.findById(request.getModeratorId()).orElse(null);
         if (moderator == null) return "Moderator not found";
 
-        // 4️⃣ تحقق من صلاحيات
         if (!moderator.getRole().equalsIgnoreCase("admin")
                 && !moderator.getRole().equalsIgnoreCase("moderator")) {
             return "Unauthorized";
         }
 
-        // 5️⃣ تحقق إذا تم التحقق مسبقاً
         if ("verified".equalsIgnoreCase(report.getStatus())) {
             return "Report already verified";
         }
 
-        // 6️⃣ إنشاء Incident
         Incident incident = new Incident();
         incident.setTitle(report.getCategory());
         incident.setDescription(report.getDescription());
@@ -88,18 +82,18 @@ public class IncidentVerificationService {
         incident.setVerifiedBy(moderator.getId());
         incident.setCreatedAt(LocalDateTime.now());
         incident.setUpdatedAt(LocalDateTime.now());
-        incidentRepo.save(incident); // ✔️ حفظ Incident أولاً
+        incidentRepo.save(incident);
 
         alertService.createAlertsForIncident(incident);
 
 
 
-        // 7️⃣ ربط التقرير بالـ Incident
+
         report.setStatus("verified");
         report.setLinkedIncidentId(incident.getId());
         reportRepo.save(report);
 
-        // 8️⃣ تسجيل اللوج
+
         ReportModerationLog log = new ReportModerationLog();
         log.setReportId(report.getId());
         log.setModeratorId(moderator.getId());
@@ -108,13 +102,12 @@ public class IncidentVerificationService {
         log.setCreatedAt(LocalDateTime.now());
         logRepo.save(log);
 
-        // 9️⃣ إضافة سجل CheckpointHistory إذا موجود Checkpoint
         if (report.getLinkedCheckpointId() != null) {
             Checkpoint checkpoint = checkpointRepo.findById(report.getLinkedCheckpointId()).orElse(null);
             if (checkpoint != null) {
                 CheckpointHistory history = new CheckpointHistory();
                 history.setCheckpoint(checkpoint);
-                history.setIncident(incident); // ✔️ الآن الـ incident محفوظ
+                history.setIncident(incident);
                 history.setInsAt(LocalDateTime.now());
                 checkpointHistoryRepo.save(history);
             }
@@ -123,7 +116,6 @@ public class IncidentVerificationService {
         return "Report verified and incident created";
     }
 
-    // تحويل التصنيف إلى نوع Incident
     private String mapCategoryToType(String category) {
         return switch (category.toLowerCase()) {
             case "traffic" -> "delay";

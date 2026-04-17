@@ -33,19 +33,16 @@ public class VoteService {
         this.activityRepo = activityRepo;
     }
 
-    // ✅ عند التصويت، نفرغ كاش التقارير لأن الـ Score تغير، ونفرغ كاش نشاط المستخدم
     @Caching(evict = {
             @CacheEvict(value = "reports", allEntries = true),
             @CacheEvict(value = "userActivities", key = "#request.userId")
     })
     public String vote(VoteRequest request) {
 
-        // validation 1: user exists
         if (!userRepo.existsById(request.userId)) {
             return "User not found";
         }
 
-        // validation 2: report exists
         Report report = reportRepo.findById(request.reportId)
                 .orElse(null);
 
@@ -53,12 +50,10 @@ public class VoteService {
             return "Report not found";
         }
 
-        // validation 3: vote type
         if (request.voteType != 1 && request.voteType != -1) {
             return "Vote must be +1 or -1";
         }
 
-        // abuse prevention
         if (voteRepo.findByUserIdAndReportId(
                 request.userId,
                 request.reportId
@@ -66,7 +61,6 @@ public class VoteService {
             return "User already voted";
         }
 
-        // save vote
         ReportVote vote = new ReportVote();
         vote.setUserId(request.userId);
         vote.setReportId(request.reportId);
@@ -75,7 +69,6 @@ public class VoteService {
 
         vote = voteRepo.save(vote);
 
-        // update credibility score
         List<ReportVote> votes =
                 voteRepo.findByReportId(request.reportId);
 
@@ -88,7 +81,6 @@ public class VoteService {
         report.setCredibilityScore((float) total);
         reportRepo.save(report);
 
-        // log history
         ReportModerationLog log = new ReportModerationLog();
         log.setReportId(request.reportId);
         log.setModeratorId(request.userId);
@@ -98,7 +90,6 @@ public class VoteService {
 
         logRepo.save(log);
 
-        // save user activity
         UserActivity activity = new UserActivity();
         activity.setUserId(request.userId);
         activity.setReportId(request.reportId);

@@ -34,7 +34,6 @@ public class InsertReportService {
         this.activityRepository = activityRepository;
     }
 
-    // حساب المسافة بالكيلومتر
     private double distance(double lat1, double lon1, double lat2, double lon2) {
         final int R = 6371; // km
         double latDistance = Math.toRadians(lat2 - lat1);
@@ -46,7 +45,6 @@ public class InsertReportService {
         return R * c;
     }
 
-    // إيجاد root report
     private Report getRootReport(Report report) {
         while (report.getDuplicateOf() != null) {
             report = reportRepository.findById(report.getDuplicateOf()).orElse(report);
@@ -55,14 +53,12 @@ public class InsertReportService {
     }
 
     @Transactional
-    // ✅ بمجرد إضافة تقرير، نفرغ كاش التقارير والنشاطات لضمان التحديث اللحظي
     @Caching(evict = {
             @CacheEvict(value = "reports", allEntries = true),
             @CacheEvict(value = "userActivities", key = "#request.userId")
     })
     public String insertReport(InsertReportRequest request) {
 
-        // 1️⃣ التحقق من المستخدم
         Optional<User> userOpt = userRepository.findById(request.userId);
         if (userOpt.isEmpty()) {
             return "User not found";
@@ -74,7 +70,6 @@ public class InsertReportService {
         LocalDateTime start = now.minusMinutes(30);
         LocalDateTime end = now.plusMinutes(30);
 
-        // 3️⃣ منع نفس المستخدم يكرر نفس النوع ضمن نفس الموقع
         List<Report> recentUserReports = reportRepository.findSimilarReportsByUser(
                 request.userId, request.category, start, end
         );
@@ -92,7 +87,6 @@ public class InsertReportService {
             }
         }
 
-        // 4️⃣ إيجاد duplicates محتملة من المستخدمين الآخرين
         List<Report> candidates = reportRepository.findSimilarReports(
                 request.category, start, end
         );
@@ -113,7 +107,6 @@ public class InsertReportService {
             }
         }
 
-        // 5️⃣ إنشاء التقرير الجديد
         Report report = new Report();
         report.setUserId(request.userId);
         report.setCategory(request.category);
@@ -146,7 +139,6 @@ public class InsertReportService {
             if (newScore >= 15) {
                 root.setIsPromoted(true);
             }
-            // 2️⃣ abuse prevention
             int activityCount = activityRepository.countByUserId(request.userId);
 
             if (activityCount < 5) {
@@ -159,10 +151,8 @@ public class InsertReportService {
             report.setDuplicateCount(0);
         }
 
-        // 6️⃣ حفظ التقرير
         report = reportRepository.save(report);
 
-        // 7️⃣ تسجيل activity
         UserActivity activity = new UserActivity();
         activity.setUserId(request.userId);
         activity.setReportId(report.getId());

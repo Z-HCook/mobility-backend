@@ -21,7 +21,6 @@ public class SubscriptionService {
     }
 
     @Transactional
-    // ✅ نمسح كاش المشتركين لأن هناك مشترك جديد انضم لنوع معين من الحوادث
     @CacheEvict(value = "subscribers", allEntries = true)
     public Subscriptions createSubscription(SubscriptionRequest request) {
         Subscriptions subscription = new Subscriptions();
@@ -31,7 +30,6 @@ public class SubscriptionService {
         subscription.setLatitude(request.getLatitude());
         subscription.setLongitude(request.getLongitude());
 
-        // منطق القيمة الافتراضية للقطر الجغرافي
         subscription.setRadiusKm(request.getRadiusKm() != null ? request.getRadiusKm() : 5.0);
 
         subscription.setIncidentType(request.getIncidentType());
@@ -40,14 +38,12 @@ public class SubscriptionService {
         return subscriptionRepository.save(subscription);
     }
 
-    // ✅ تخزين اشتراكات المستخدم في الكاش لتسريع عرضها في صفحته الشخصية
     @Cacheable(value = "userSubscriptions", key = "#userId")
     public List<Subscriptions> getSubscriptionsByUserId(int userId) {
         return subscriptionRepository.findByUserId(userId);
     }
 
     @Transactional
-    // ✅ نمسح كاش المشتركين وكاش المستخدم عند حذف اشتراك
     @CacheEvict(value = {"subscribers", "userSubscriptions"}, allEntries = true)
     public void deleteSubscription(int id) {
         if (!subscriptionRepository.existsById(id)) {

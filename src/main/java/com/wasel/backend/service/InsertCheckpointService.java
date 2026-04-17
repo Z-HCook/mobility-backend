@@ -22,11 +22,9 @@ public class InsertCheckpointService {
         this.userRepository = userRepository;
     }
 
-    // ✅ مسح الكاش المسمى "checkpoints" عند إضافة حاجز جديد من قبل الآدمن
     @CacheEvict(value = "checkpoints", allEntries = true)
     public String insertCheckpoint(InsertCheckpointRequest request) {
 
-        // جلب اليوزر
         Optional<User> userOpt = userRepository.findById(request.createdById);
         if (userOpt.isEmpty()) {
             return "User not found";
@@ -34,12 +32,10 @@ public class InsertCheckpointService {
 
         User user = userOpt.get();
 
-        // تحقق أن الدور admin فقط
         if (!user.getRole().equalsIgnoreCase("admin")) {
             return "Only admins can add checkpoints";
         }
 
-        // إنشاء الـ Checkpoint
         Checkpoint checkpoint = new Checkpoint();
         checkpoint.setName(request.name);
         checkpoint.setLatitude(request.latitude);

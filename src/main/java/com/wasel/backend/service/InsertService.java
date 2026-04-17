@@ -16,8 +16,6 @@ public class InsertService {
         this.userRepository = userRepository;
     }
 
-    // ✅ نمسح أي كاش متعلق بالمستخدمين عند تسجيل مستخدم جديد
-    // استخدمنا البريد الإلكتروني كمفتاح لأنه وسيلة التحقق الأساسية
     @CacheEvict(value = "users", key = "#request.email")
     public String register(RegisterRequest request) {
 

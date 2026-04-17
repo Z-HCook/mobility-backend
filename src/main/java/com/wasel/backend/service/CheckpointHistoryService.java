@@ -17,13 +17,11 @@ public class CheckpointHistoryService {
         this.checkpointHistoryRepository = checkpointHistoryRepository;
     }
 
-    // ✅ تخزين تاريخ الحاجز بناءً على الـ ID
     @Cacheable(value = "checkpointHistory", key = "#checkpointId")
     public List<CheckpointHistory> getByCheckpointId(Integer checkpointId) {
         return checkpointHistoryRepository.findByCheckpoint_Id(checkpointId);
     }
 
-    // ✅ تخزين نتائج البحث الزمني (المفتاح هنا يجمع الـ ID مع الفترات الزمنية)
     @Cacheable(value = "checkpointHistoryRange", key = "#checkpointId.toString() + #start.toString() + #end.toString()")
     public List<CheckpointHistory> getByCheckpointIdAndDate(
             Integer checkpointId,

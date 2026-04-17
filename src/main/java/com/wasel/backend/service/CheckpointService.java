@@ -19,12 +19,9 @@ public class CheckpointService {
         this.checkpointRepository = checkpointRepository;
         this.userRepository = userRepository;
     }
-    // ✅ عند إنشاء حاجز جديد، نقوم بمسح الكاش المسمى "checkpoints"
-    // لضمان أن المستخدم سيرى القائمة المحدثة في المرة القادمة.
     @CacheEvict(value = "checkpoints", allEntries = true)
     public String createCheckpoint(CheckpointRequest request) {
 
-        // ✅ validation
         if (request.getName() == null || request.getName().isEmpty()) {
             throw new RuntimeException("Checkpoint name is required");
         }
