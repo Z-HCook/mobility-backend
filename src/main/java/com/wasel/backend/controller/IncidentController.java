@@ -15,7 +15,6 @@ public class IncidentController {
         this.verifyReportUseCase = verifyReportUseCase;
     }
 
-    @PostMapping("/verify")
     public ResponseEntity<String> verify(@RequestBody VerifyReportRequest request) {
         String result = verifyReportUseCase.execute(request);
         return ResponseEntity.ok(result);

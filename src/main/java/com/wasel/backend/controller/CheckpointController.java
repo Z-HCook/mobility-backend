@@ -25,7 +25,7 @@ public class CheckpointController {
         this.checkpointService = checkpointService;
     }
 
-    @PostMapping("/insert")
+    @PostMapping
     public ResponseEntity<?> createCheckpoint(@RequestBody InsertCheckpointRequest request) {
         return ResponseEntity.status(201)
                 .body(insertCheckpointUseCase.execute(request));
