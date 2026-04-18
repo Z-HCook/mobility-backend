@@ -43,34 +43,26 @@ public class CheckpointController {
         }
     }
 
+    @GetMapping("/{id}/history")
+    public ResponseEntity<?> getCheckpointHistorybydate(@PathVariable Integer id, @RequestParam(required = false) LocalDateTime start,
+                                                  @RequestParam(required = false) LocalDateTime end, HttpServletRequest request) {
 
-    public ResponseEntity<?> getCheckpointHistory(
-            @PathVariable Integer id,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-            LocalDateTime start,
-
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-            LocalDateTime end,
-
-            HttpServletRequest request
-    ) {
         Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
 
-        if (!bucket.tryConsume(1)) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Too many requests");
-        }
+        if (bucket.tryConsume(1)) {
+            if (start != null && end != null) {
+                return ResponseEntity.ok(
+                        checkpointService.getByCheckpointIdAndDate(id, start, end)
+                );
+            }
 
-        if (start != null && end != null) {
             return ResponseEntity.ok(
-                    checkpointService.getByCheckpointIdAndDate(id, start, end)
+                    checkpointService.getByCheckpointId(id)
             );
+        } else {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body("Slow down! You've reached the limit of requests per minute.");
         }
-
-        return ResponseEntity.ok(
-                checkpointService.getByCheckpointId(id)
-        );
     }
 
     @PostMapping("/insert")
