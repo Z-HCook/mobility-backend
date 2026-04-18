@@ -3,11 +3,13 @@ package com.wasel.backend.controller;
 import com.wasel.backend.dto.CheckpointRequest;
 import com.wasel.backend.dto.InsertCheckpointRequest;
 import com.wasel.backend.model.Checkpoint;
+import com.wasel.backend.model.CheckpointHistory;
 import com.wasel.backend.service.CheckpointService;
 import com.wasel.backend.service.RateLimitingService;
 import com.wasel.backend.usecase.InsertCheckpointUseCase;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,25 +44,35 @@ public class CheckpointController {
     }
 
     @GetMapping("/{id}/history")
-    public ResponseEntity<?> getCheckpointHistorybydate(@PathVariable Integer id, @RequestParam(required = false) LocalDateTime start,
-                                                  @RequestParam(required = false) LocalDateTime end, HttpServletRequest request) {
+    public ResponseEntity<List<CheckpointHistory>> getCheckpointHistorybydate(
+            @PathVariable Integer id,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime start,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime end,
+
+            HttpServletRequest request
+    ) {
 
         Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
 
-        if (bucket.tryConsume(1)) {
-            if (start != null && end != null) {
-                return ResponseEntity.ok(
-                        checkpointService.getByCheckpointIdAndDate(id, start, end)
-                );
-            }
-
-            return ResponseEntity.ok(
-                    checkpointService.getByCheckpointId(id)
-            );
-        } else {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .body("Slow down! You've reached the limit of requests per minute.");
+        if (!bucket.tryConsume(1)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }
+
+        if (start != null && end != null) {
+            return ResponseEntity.ok(
+                    checkpointService.getByCheckpointIdAndDate(id, start, end)
+            );
+        }
+
+        return ResponseEntity.ok(
+                checkpointService.getByCheckpointId(id)
+        );
     }
 
     @PostMapping("/insert")
