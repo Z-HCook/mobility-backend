@@ -33,7 +33,7 @@ public class UserController {
         Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
         if (bucket.tryConsume(1)) {
             User created = userUseCase.create(user);
-            return ResponseEntity.status(201).body(created);
+            return ResponseEntity.status(200).body(created);
 
         } else {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)

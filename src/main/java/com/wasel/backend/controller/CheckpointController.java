@@ -70,13 +70,15 @@ public class CheckpointController {
 
         Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
 
-        if (bucket.tryConsume(1)) {
-            return ResponseEntity.status(201)
-                    .body(insertCheckpointUseCase.execute(checkpointRequest));
-        } else {
+        if (!bucket.tryConsume(1)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                     .body("You have exceeded the limit for creating checkpoints. Please try again later.");
         }
+
+            return ResponseEntity.status(200)
+                    .body(insertCheckpointUseCase.execute(checkpointRequest));
+
+
 
     }
 }

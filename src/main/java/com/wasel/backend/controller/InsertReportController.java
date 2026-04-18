@@ -30,7 +30,7 @@ public class InsertReportController {
 
         if (bucket.tryConsume(1)) {
             var result = service.insertReport(reportRequest);
-            return ResponseEntity.status(201).body(result);
+            return ResponseEntity.status(200).body(result);
         } else {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                     .body("You've sent too many reports. Please wait a minute before submitting a new one.");
