@@ -38,7 +38,7 @@ public class SubscriptionService {
         return subscriptionRepository.save(subscription);
     }
 
-    @Cacheable(value = "userSubscriptions", key = "#userId")
+    @CacheEvict(value = "userSubscriptions", key = "#userId")
     public List<Subscriptions> getSubscriptionsByUserId(int userId) {
         return subscriptionRepository.findByUserId(userId);
     }
