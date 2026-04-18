@@ -2,11 +2,16 @@ package com.wasel.backend.controller;
 
 import com.wasel.backend.dto.InsertReportRequest;
 import com.wasel.backend.service.InsertReportService;
+import com.wasel.backend.service.RateLimitingService; // 1. استيراد الخدمة
+import io.github.bucket4j.Bucket;
+import jakarta.servlet.http.HttpServletRequest; // 2. استيراد لجلب الـ IP
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/reports")
+@RequestMapping("/insert")
 public class InsertReportController {
 
     private final InsertReportService service;
@@ -15,9 +20,17 @@ public class InsertReportController {
         this.service = service;
     }
 
+    @PostMapping("/report")
+    public ResponseEntity<String> insertReport(@RequestBody InsertReportRequest reportRequest, HttpServletRequest request) {
 
-    @PostMapping
-    public ResponseEntity<?> insertReport(@RequestBody InsertReportRequest request) {
-        var result = service.insertReport(request);
-        return ResponseEntity.status(201).body(result);
-    }}
+        Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
+
+        if (bucket.tryConsume(1)) {
+            var result = service.insertReport(reportRequest);
+            return ResponseEntity.status(201).body(result);
+        } else {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body("You've sent too many reports. Please wait a minute before submitting a new one.");
+        }
+    }
+}
