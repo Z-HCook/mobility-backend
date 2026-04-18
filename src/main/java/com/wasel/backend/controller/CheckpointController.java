@@ -43,7 +43,7 @@ public class CheckpointController {
         }
     }
 
-    @GetMapping("/{id}/history")
+
     public ResponseEntity<?> getCheckpointHistorybydate(@PathVariable Integer id, @RequestParam(required = false) LocalDateTime start,
                                                   @RequestParam(required = false) LocalDateTime end, HttpServletRequest request) {
 
