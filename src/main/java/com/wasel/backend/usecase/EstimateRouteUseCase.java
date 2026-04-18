@@ -1,7 +1,7 @@
 package com.wasel.backend.usecase;
 
 import com.wasel.backend.dto.RouteRequest;
-import com.wasel.backend.model.RouteResponse;
+import com.wasel.backend.dto.RouteResponse;
 import com.wasel.backend.service.RouteEstimationService;
 import org.springframework.stereotype.Component;
 

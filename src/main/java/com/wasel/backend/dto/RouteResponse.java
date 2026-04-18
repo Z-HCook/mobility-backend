@@ -1,4 +1,4 @@
-package com.wasel.backend.model;
+package com.wasel.backend.dto;
 
 import java.util.List;
 

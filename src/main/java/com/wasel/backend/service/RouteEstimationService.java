@@ -1,7 +1,7 @@
 package com.wasel.backend.service;
 
 import com.wasel.backend.dto.RouteRequest;
-import com.wasel.backend.model.RouteResponse;
+import com.wasel.backend.dto.RouteResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

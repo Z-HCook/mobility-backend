@@ -2,9 +2,7 @@
 package com.wasel.backend.service;
 
 import com.wasel.backend.dto.InsertReportRequest;
-import com.wasel.backend.model.Report;
-import com.wasel.backend.model.User;
-import com.wasel.backend.model.UserActivity;
+import com.wasel.backend.model.*;
 import com.wasel.backend.repository.ReportRepository;
 import com.wasel.backend.repository.UserActivityRepository;
 import com.wasel.backend.repository.UserRepository;
@@ -34,18 +32,10 @@ public class InsertReportService {
         this.activityRepository = activityRepository;
     }
 
-    private double distance(double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371; // km
-        double latDistance = Math.toRadians(lat2 - lat1);
-        double lonDistance = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    }
+
 
     private Report getRootReport(Report report) {
+
         while (report.getDuplicateOf() != null) {
             report = reportRepository.findById(report.getDuplicateOf()).orElse(report);
         }
@@ -58,7 +48,8 @@ public class InsertReportService {
             @CacheEvict(value = "userActivities", key = "#request.userId")
     })
     public String insertReport(InsertReportRequest request) {
-
+        final Checkpoint checkpoint = null;
+        final Incident incident = null;
         Optional<User> userOpt = userRepository.findById(request.userId);
         if (userOpt.isEmpty()) {
             return "User not found";
@@ -75,7 +66,7 @@ public class InsertReportService {
         );
 
         for (Report r : recentUserReports) {
-            double dist = distance(
+            double dist = incident.distance(
                     request.latitude,
                     request.longitude,
                     r.getLatitude(),
@@ -94,7 +85,7 @@ public class InsertReportService {
         Report matchedReport = null;
 
         for (Report r : candidates) {
-            double dist = distance(
+            double dist = incident.distance(
                     request.latitude,
                     request.longitude,
                     r.getLatitude(),
@@ -120,6 +111,8 @@ public class InsertReportService {
         report.setIsPromoted(false);
         report.setCreatedAt(now);
         report.setUpdatedAt(now);
+     //   checkpoint.getcheckpoint(request.latitude , request.longitude); if neaded
+        report.setLinkedCheckpointId(request.linkedcheckpoint);
 
         if (matchedReport != null) {
 

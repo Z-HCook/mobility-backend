@@ -32,7 +32,7 @@ public class VoteController {
 
         if (bucket.tryConsume(1)) {
             String result = voteUseCase.execute(voteRequest);
-            return ResponseEntity.status(201).body(result);
+            return ResponseEntity.status(200).body(result);
         } else {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                     .body("You're voting too fast! Please wait a moment.");

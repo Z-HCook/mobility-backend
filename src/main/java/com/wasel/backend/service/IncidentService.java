@@ -115,6 +115,7 @@ public class IncidentService {
         incident.setVerifiedBy(moderator.getId());
         incident.setCreatedAt(LocalDateTime.now());
         incident.setUpdatedAt(LocalDateTime.now());
+        incident.setCheckpointId(report.getLinkedCheckpointId());
         incidentRepo.save(incident);
 
         alertService.createAlertsForIncident(incident);

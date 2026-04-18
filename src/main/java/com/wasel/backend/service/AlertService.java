@@ -5,6 +5,7 @@ import com.wasel.backend.model.Subscriptions;
 import com.wasel.backend.model.Incident;
 import com.wasel.backend.repository.AlertRepository;
 import com.wasel.backend.repository.SubscriptionRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,15 +25,14 @@ public class AlertService {
 
     @Transactional
     public void createAlertsForIncident(Incident incident) {
-
         String normalizedType = normalizeType(incident.getType());
+        final Incident insedant = null;
 
-        List<Subscriptions> subscribers =
-                subscriptionRepository.findByIncidentType(normalizedType);
+        List<Subscriptions> subscribers = subscriptionRepository.findByIncidentType(incident.getType());
 
         if (subscribers != null) {
             for (Subscriptions sub : subscribers) {
-                double distance = calculateDistance(
+                double distance = insedant.distance(
                         incident.getLatitude(), incident.getLongitude(),
                         sub.getLatitude(), sub.getLongitude()
                 );
@@ -46,7 +46,7 @@ public class AlertService {
         }
     }
 
-    //@Cacheable(value = "subscribers", key = "#incidentType")
+    @CacheEvict(value = "subscribers", key = "#incidentType")
     public List<Subscriptions> getSubscribersByType(String incidentType) {
         return subscriptionRepository.findByIncidentType(incidentType);
     }
@@ -59,17 +59,6 @@ public class AlertService {
         alert.setIsRead(false);
         alert.setCreatedAt(LocalDateTime.now());
         alertRepository.save(alert);
-    }
-
-    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        double R = 6371; // نصف قطر الأرض بالكم
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
     }
 
     private String normalizeType(String type) {
