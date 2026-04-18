@@ -17,8 +17,8 @@ import java.util.Set;
 
 @Service
 public class IncidentService {
+
     private final IncidentRepository incidentRepo;
-    private final Incident incident;
     private final ReportRepository reportRepo;
     private final UserRepository userRepo;
     private final ReportModerationLogRepository logRepo;
@@ -34,23 +34,26 @@ public class IncidentService {
                             CheckpointRepository checkpointRepo,
                             CheckpointHistoryRepository checkpointHistoryRepo,
                             IncidentRepository incidentRepository,
-                            AlertService alertService , Incident incident) {
+                            AlertService alertService )
+    {
         this.reportRepo = reportRepo;
         this.userRepo = userRepo;
         this.incidentRepo = incidentRepo;
         this.logRepo = logRepo;
         this.checkpointRepo = checkpointRepo;
         this.checkpointHistoryRepo = checkpointHistoryRepo;
-          this.alertService = alertService;    this.incident = incident;
+          this.alertService = alertService;
 
     }
     public int countIncidentsNearRouteEndpoints(RouteRequest request) {
+        final Incident incident = null;
         LocalDateTime thirtyMinutesAgo = LocalDateTime.now().minusMinutes(30);
 
         List<Incident> incidents = incidentRepo.findRecentIncidents(thirtyMinutesAgo);
         Set<Incident> unique = new HashSet<>();
 
         for (var i : incidents) {
+
 
             double diststart = incident.distance(request.getStartLat(), request.getStartLng(),
                     i.getLatitude(), i.getLongitude());

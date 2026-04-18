@@ -1,5 +1,5 @@
 package com.wasel.backend.model;
-
+import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -129,4 +129,12 @@ public class Incident {
         return R * c;
     }
 
+    public String map(String category) {
+        return switch (category.toLowerCase()) {
+            case "traffic" -> "DELAY";
+            case "safety" -> "ACCIDENT";
+            case "weather" -> "WEATHER";
+            default -> "CLOSURE";
+        };
+    }
 }

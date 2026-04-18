@@ -1,5 +1,6 @@
 package com.wasel.backend.model;
 
+import com.wasel.backend.repository.UserRepository;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -90,5 +91,11 @@ public class User {        // اسم الكلاس Capital Letter، convention ف
 
     public User orElseThrow(Object userNotFound) {
         return null;
+    }
+
+    public User validateUser(Integer userId) {
+        UserRepository userRepository = null;
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }
