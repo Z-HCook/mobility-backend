@@ -5,5 +5,5 @@ public class InsertCheckpointRequest {
     public double latitude;
     public double longitude;
     public String description;
-    public int createdById; // ID للـ User اللي عامل الإدخال
+    public int createdById;
 }
