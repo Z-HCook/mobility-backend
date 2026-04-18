@@ -1,8 +1,6 @@
 package com.wasel.backend.controller;
 
-import com.wasel.backend.dto.CheckpointRequest;
 import com.wasel.backend.dto.InsertCheckpointRequest;
-import com.wasel.backend.model.Checkpoint;
 import com.wasel.backend.service.CheckpointService;
 import com.wasel.backend.service.RateLimitingService;
 import com.wasel.backend.usecase.InsertCheckpointUseCase;
