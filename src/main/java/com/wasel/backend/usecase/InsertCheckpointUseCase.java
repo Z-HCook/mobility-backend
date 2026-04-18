@@ -1,19 +1,20 @@
 package com.wasel.backend.usecase;
 
+import com.wasel.backend.dto.CheckpointRequest;
 import com.wasel.backend.dto.InsertCheckpointRequest;
-import com.wasel.backend.service.InsertCheckpointService;
+import com.wasel.backend.service.CheckpointService;
 import org.springframework.stereotype.Component;
 
 @Component
 public class InsertCheckpointUseCase {
 
-    private final InsertCheckpointService insertCheckpointService;
+    private final CheckpointService CheckpointService;
 
-    public InsertCheckpointUseCase(InsertCheckpointService insertCheckpointService) {
-        this.insertCheckpointService = insertCheckpointService;
+    public InsertCheckpointUseCase(CheckpointService CheckpointService) {
+        this.CheckpointService = CheckpointService;
     }
 
     public String execute(InsertCheckpointRequest request) {
-        return insertCheckpointService.insertCheckpoint(request);
+        return CheckpointService.insertCheckpoint(request);
     }
 }

@@ -3,6 +3,7 @@ package com.wasel.backend.controller;
 import com.wasel.backend.dto.SubscriptionRequest;
 import com.wasel.backend.model.Subscriptions;
 import com.wasel.backend.service.SubscriptionService;
+import com.wasel.backend.usecase.SubscriptionUseCase;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,34 +13,26 @@ import java.util.List;
 @RequestMapping("/api/v1/subscriptions")
 public class SubscriptionController {
 
-    private final SubscriptionService subscriptionService;
+    private final SubscriptionUseCase subscriptionUseCase;
 
-    public SubscriptionController(SubscriptionService subscriptionService) {
-        this.subscriptionService = subscriptionService;
+    public SubscriptionController(SubscriptionUseCase subscriptionUseCase) {
+        this.subscriptionUseCase = subscriptionUseCase;
     }
 
-
+    @PostMapping
     public ResponseEntity<?> subscribe(@RequestBody SubscriptionRequest request) {
-        try {
-            Subscriptions saved = subscriptionService.createSubscription(request);
-            return ResponseEntity.ok(saved);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error: " + e.getMessage());
-        }
+        Subscriptions saved = subscriptionUseCase.create(request);
+        return ResponseEntity.status(201).body(saved);
     }
 
-
+    @GetMapping("/user/{userId}")
     public ResponseEntity<List<Subscriptions>> getMySubscriptions(@PathVariable int userId) {
-        return ResponseEntity.ok(subscriptionService.getSubscriptionsByUserId(userId));
+        return ResponseEntity.ok(subscriptionUseCase.getByUserId(userId));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> unsubscribe(@PathVariable int id) {
-        try {
-            subscriptionService.deleteSubscription(id);
-            return ResponseEntity.ok("تم حذف الاشتراك بنجاح ✅");
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
+        subscriptionUseCase.delete(id);
+        return ResponseEntity.ok("Subscription deleted successfully");
     }
 }
