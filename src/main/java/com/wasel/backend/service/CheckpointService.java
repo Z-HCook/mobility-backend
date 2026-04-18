@@ -2,6 +2,8 @@
 
 import com.wasel.backend.dto.CheckpointRequest;
 import com.wasel.backend.dto.InsertCheckpointRequest;
+import com.wasel.backend.exception.ResourceNotFoundException;
+import com.wasel.backend.exception.UnauthorizedException;
 import com.wasel.backend.model.Checkpoint;
 import com.wasel.backend.model.CheckpointHistory;
 import com.wasel.backend.model.User;
@@ -36,10 +38,10 @@ public class CheckpointService {
     public String insertCheckpoint(InsertCheckpointRequest request) {
 
 
-        User user = userRepository.findById(request.createdById)
+        User user = userRepository.findById(request.getCreatedById())
 
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "User with id " + request.createdById + " not found"
+                        "User with id " + request.getCreatedById() + " not found"
                 ));
 
         if (!user.getRole().equalsIgnoreCase("admin")) {
@@ -50,10 +52,10 @@ public class CheckpointService {
 
 
         Checkpoint checkpoint = new Checkpoint();
-        checkpoint.setName(request.name);
-        checkpoint.setLatitude(request.latitude);
-        checkpoint.setLongitude(request.longitude);
-        checkpoint.setDescription(request.description);
+        checkpoint.setName(request.getName());
+        checkpoint.setLatitude(request.getLatitude());
+        checkpoint.setLongitude(request.getLongitude());
+        checkpoint.setDescription(request.getDescription());
         checkpoint.setCreatedBy(user);
         checkpoint.setCreatedAt(LocalDateTime.now());
 
