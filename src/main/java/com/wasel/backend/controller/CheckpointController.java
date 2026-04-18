@@ -43,7 +43,7 @@ public class CheckpointController {
         }
     }
 
-
+    @GetMapping ("/{id}/timeperiod")
     public ResponseEntity<?> getCheckpointHistorybydate(@PathVariable Integer id, @RequestParam(required = false) LocalDateTime start,
                                                   @RequestParam(required = false) LocalDateTime end, HttpServletRequest request) {
 
@@ -65,7 +65,7 @@ public class CheckpointController {
         }
     }
 
-    @PostMapping("/insert")
+    @PostMapping
     public ResponseEntity<?> createCheckpoint(@RequestBody InsertCheckpointRequest checkpointRequest, HttpServletRequest request) {
 
         Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());

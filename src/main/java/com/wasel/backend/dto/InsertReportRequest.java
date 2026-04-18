@@ -9,5 +9,5 @@ public class InsertReportRequest {
     public Double latitude;
     public Double longitude;
     public String type;
-
+    public Integer linkedcheckpoint ;
 }

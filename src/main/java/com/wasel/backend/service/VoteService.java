@@ -40,25 +40,25 @@ public class VoteService {
     })
     public String vote(VoteRequest request) {
 
-        // 1. user check
+
         User user = userRepo.findById(request.userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // 2. report check
+
         Report report = reportRepo.findById(request.reportId)
                 .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
 
-        // 3. validation vote type
+
         if (request.voteType != 1 && request.voteType != -1) {
             throw new ValidationException("Vote must be +1 or -1");
         }
 
-        // 4. already voted check
+
         if (voteRepo.findByUserIdAndReportId(request.userId, request.reportId).isPresent()) {
             throw new BusinessRuleException("User already voted");
         }
 
-        // 5. save vote
+
         ReportVote vote = new ReportVote();
         vote.setUserId(request.userId);
         vote.setReportId(request.reportId);
