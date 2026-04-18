@@ -1,9 +1,14 @@
 package com.wasel.backend.service;
 
 import com.wasel.backend.dto.RouteRequest;
-import com.wasel.backend.model.Incident;
-import com.wasel.backend.repository.IncidentRepository;
+import com.wasel.backend.dto.VerifyReportRequest;
+import com.wasel.backend.model.*;
+import com.wasel.backend.repository.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -12,23 +17,44 @@ import java.util.Set;
 
 @Service
 public class IncidentService {
-    private final IncidentRepository incidentRepository;
+    private final IncidentRepository incidentRepo;
+    private final Incident incident;
+    private final ReportRepository reportRepo;
+    private final UserRepository userRepo;
+    private final ReportModerationLogRepository logRepo;
+    private final CheckpointRepository checkpointRepo;
+    private final CheckpointHistoryRepository checkpointHistoryRepo;
+    private final AlertService alertService;
 
-    public IncidentService(IncidentRepository incidentRepository) {
-        this.incidentRepository = incidentRepository;
+
+    public IncidentService( ReportRepository reportRepo,
+                            UserRepository userRepo,
+                            IncidentRepository incidentRepo,
+                            ReportModerationLogRepository logRepo,
+                            CheckpointRepository checkpointRepo,
+                            CheckpointHistoryRepository checkpointHistoryRepo,
+                            IncidentRepository incidentRepository,
+                            AlertService alertService , Incident incident) {
+        this.reportRepo = reportRepo;
+        this.userRepo = userRepo;
+        this.incidentRepo = incidentRepo;
+        this.logRepo = logRepo;
+        this.checkpointRepo = checkpointRepo;
+        this.checkpointHistoryRepo = checkpointHistoryRepo;
+          this.alertService = alertService;    this.incident = incident;
+
     }
     public int countIncidentsNearRouteEndpoints(RouteRequest request) {
         LocalDateTime thirtyMinutesAgo = LocalDateTime.now().minusMinutes(30);
 
-        List<Incident> incidents = incidentRepository.findRecentIncidents(thirtyMinutesAgo);
-
+        List<Incident> incidents = incidentRepo.findRecentIncidents(thirtyMinutesAgo);
         Set<Incident> unique = new HashSet<>();
 
         for (var i : incidents) {
 
-            double diststart = distance(request.getStartLat(), request.getStartLng(),
+            double diststart = incident.distance(request.getStartLat(), request.getStartLng(),
                     i.getLatitude(), i.getLongitude());
-            double distend = distance(request.getEndLat(), request.getEndLng(),
+            double distend = incident.distance(request.getEndLat(), request.getEndLng(),
                     i.getLatitude(), i.getLongitude());
 
             if (diststart < 3 || distend < 3) {
@@ -37,23 +63,99 @@ public class IncidentService {
         }
 
         return unique.size();
-
-
-
     }
 
 
-    public double distance(double lat1, double lon1, double lat2, double lon2) {
-        double R = 6371; // km
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
+    @Transactional
 
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2)
-                + Math.cos(Math.toRadians(lat1))
-                * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon/2) * Math.sin(dLon/2);
+    @Caching(evict = {
+            @CacheEvict(value = "incidents", allEntries = true),
+            @CacheEvict(value = "checkpointHistory", allEntries = true),
+            @CacheEvict(value = "checkpointHistoryRange", allEntries = true)
+    })
+    public String verifyReport(VerifyReportRequest request) {
 
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
+
+        Report report = reportRepo.findById(request.getReportId()).orElse(null);
+        if (report == null) return "Report not found";
+
+
+        if (!Boolean.TRUE.equals(report.getIsPromoted())) {
+            return "Report is not eligible for verification";
+        }
+
+
+        User moderator = userRepo.findById(request.getModeratorId()).orElse(null);
+        if (moderator == null) return "Moderator not found";
+
+
+        if (!moderator.getRole().equalsIgnoreCase("admin")
+                && !moderator.getRole().equalsIgnoreCase("moderator")) {
+            return "Unauthorized";
+        }
+
+
+        if ("verified".equalsIgnoreCase(report.getStatus())) {
+            return "Report already verified";
+        }
+
+
+        Incident incident = new Incident();
+        incident.setTitle(report.getCategory());
+        incident.setDescription(report.getDescription());
+        incident.setType(mapCategoryToType(report.getCategory()));
+        incident.setSeverity("medium");
+        incident.setStatus("verified");
+        incident.setLatitude(report.getLatitude());
+        incident.setLongitude(report.getLongitude());
+        incident.setReportedBy(report.getUserId());
+        incident.setVerifiedBy(moderator.getId());
+        incident.setCreatedAt(LocalDateTime.now());
+        incident.setUpdatedAt(LocalDateTime.now());
+        incidentRepo.save(incident);
+
+        alertService.createAlertsForIncident(incident);
+
+
+
+
+        report.setStatus("verified");
+        report.setLinkedIncidentId(incident.getId());
+        reportRepo.save(report);
+
+
+        ReportModerationLog log = new ReportModerationLog();
+        log.setReportId(report.getId());
+        log.setModeratorId(moderator.getId());
+        log.setAction("VERIFY");
+        log.setNote("Created incident ID: " + incident.getId());
+        log.setCreatedAt(LocalDateTime.now());
+        logRepo.save(log);
+
+
+        if (report.getLinkedCheckpointId() != null) {
+            Checkpoint checkpoint = checkpointRepo.findById(report.getLinkedCheckpointId()).orElse(null);
+            if (checkpoint != null) {
+                CheckpointHistory history = new CheckpointHistory();
+                history.setCheckpoint(checkpoint);
+                history.setIncident(incident);
+                history.setInsAt(LocalDateTime.now());
+                checkpointHistoryRepo.save(history);
+            }
+        }
+
+        return "Report verified and incident created";
     }
+
+
+    private String mapCategoryToType(String category) {
+        return switch (category.toLowerCase()) {
+            case "traffic" -> "delay";
+            case "safety" -> "accident";
+            case "weather" -> "weather";
+            default -> "closure";
+        };
+    }
+
+
 }
