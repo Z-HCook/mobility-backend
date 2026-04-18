@@ -37,7 +37,7 @@ public class SubscriptionController {
 
         if (bucket.tryConsume(1)) {
             try {
-                Subscriptions saved = subscriptionUseCase.create(request);
+                Subscriptions saved = subscriptionUseCase.create( subscriptionRequest);
                 return ResponseEntity.status(201).body(saved);
             } catch (Exception e) {
                 return ResponseEntity.status(500).body("Error: " + e.getMessage());

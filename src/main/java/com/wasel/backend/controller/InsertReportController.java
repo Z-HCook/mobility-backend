@@ -15,10 +15,13 @@ import org.springframework.web.bind.annotation.*;
 public class InsertReportController {
 
     private final InsertReportService service;
+    private final RateLimitingService rateLimitingService;
 
-    public InsertReportController(InsertReportService service) {
+    public InsertReportController(InsertReportService service, RateLimitingService rateLimitingService) {
         this.service = service;
+        this.rateLimitingService = rateLimitingService;
     }
+
 
     @PostMapping("/report")
     public ResponseEntity<String> insertReport(@RequestBody InsertReportRequest reportRequest, HttpServletRequest request) {

@@ -59,11 +59,11 @@ public class UserController {
         Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
         User user = userUseCase.getById(id);
         if (bucket.tryConsume(1)) {
-            if (user == null){
+            if (user == null) {
                 return ResponseEntity.notFound().build();
-             } else {
-            return ResponseEntity.ok(user);
-        }
+            } else {
+                return ResponseEntity.ok(user);
+            }
         } else {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                     .body("Request limit exceeded.");

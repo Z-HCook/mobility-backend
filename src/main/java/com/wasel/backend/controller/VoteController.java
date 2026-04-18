@@ -31,7 +31,7 @@ public class VoteController {
         Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
 
         if (bucket.tryConsume(1)) {
-            String result = voteUseCase.execute(request);
+            String result = voteUseCase.execute(voteRequest);
             return ResponseEntity.status(201).body(result);
         } else {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
