@@ -24,7 +24,11 @@ public class AlertService {
 
     @Transactional
     public void createAlertsForIncident(Incident incident) {
-        List<Subscriptions> subscribers = subscriptionRepository.findByIncidentType(incident.getType());
+
+        String normalizedType = normalizeType(incident.getType());
+
+        List<Subscriptions> subscribers =
+                subscriptionRepository.findByIncidentType(normalizedType);
 
         if (subscribers != null) {
             for (Subscriptions sub : subscribers) {
@@ -42,7 +46,7 @@ public class AlertService {
         }
     }
 
-    @Cacheable(value = "subscribers", key = "#incidentType")
+    //@Cacheable(value = "subscribers", key = "#incidentType")
     public List<Subscriptions> getSubscribersByType(String incidentType) {
         return subscriptionRepository.findByIncidentType(incidentType);
     }
@@ -66,5 +70,24 @@ public class AlertService {
                         Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    private String normalizeType(String type) {
+        if (type == null) return null;
+
+        type = type.toLowerCase();
+
+        switch (type) {
+            case "closure":
+                return "CLOSURE"; // أو حسب المنطق تبعك
+            case "accident":
+                return "ACCIDENT";
+            case "weather":
+                return "WEATHER";
+            case "delay":
+                return "TRAFFIC";
+            default:
+                return type.toUpperCase();
+        }
     }
 }

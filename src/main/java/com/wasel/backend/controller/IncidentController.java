@@ -25,7 +25,7 @@ public class IncidentController {
         this.rateLimitingService = rateLimitingService;
     }
 
-    @PostMapping("/verify")
+    @PostMapping
     public ResponseEntity<String> verify(@RequestBody VerifyReportRequest verifyRequest, HttpServletRequest request) {
 
         Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
