@@ -43,10 +43,9 @@ public class CheckpointController {
         }
     }
 
-    @GetMapping("/{id}/history")
-    public ResponseEntity<List<CheckpointHistory>> getCheckpointHistorybydate(
-            @PathVariable Integer id,
 
+    public ResponseEntity<?> getCheckpointHistory(
+            @PathVariable Integer id,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             LocalDateTime start,
@@ -57,11 +56,10 @@ public class CheckpointController {
 
             HttpServletRequest request
     ) {
-
         Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
 
         if (!bucket.tryConsume(1)) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Too many requests");
         }
 
         if (start != null && end != null) {
