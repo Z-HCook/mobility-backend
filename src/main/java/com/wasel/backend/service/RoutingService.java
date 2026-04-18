@@ -49,7 +49,7 @@ public class RoutingService {
 
         return requestRoute(url);
     }
-
+// new
     public Map<String, Object> getRouteWithAvoid(RouteRequest request, List<String> factors) {
 
         if (request.getStartLat() == 0.0 && request.getStartLng() == 0.0) {

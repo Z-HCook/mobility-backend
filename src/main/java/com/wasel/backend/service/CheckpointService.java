@@ -41,6 +41,7 @@ public class CheckpointService {
             return "User not found";
         }
 
+
         User user = userOpt.get();
 
 
