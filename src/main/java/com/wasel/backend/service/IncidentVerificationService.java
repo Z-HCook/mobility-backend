@@ -99,7 +99,7 @@ public class IncidentVerificationService {
         report.setLinkedIncidentId(incident.getId());
         reportRepo.save(report);
 
-        // 8️⃣ تسجيل اللوج
+
         ReportModerationLog log = new ReportModerationLog();
         log.setReportId(report.getId());
         log.setModeratorId(moderator.getId());
@@ -108,13 +108,13 @@ public class IncidentVerificationService {
         log.setCreatedAt(LocalDateTime.now());
         logRepo.save(log);
 
-        // 9️⃣ إضافة سجل CheckpointHistory إذا موجود Checkpoint
+
         if (report.getLinkedCheckpointId() != null) {
             Checkpoint checkpoint = checkpointRepo.findById(report.getLinkedCheckpointId()).orElse(null);
             if (checkpoint != null) {
                 CheckpointHistory history = new CheckpointHistory();
                 history.setCheckpoint(checkpoint);
-                history.setIncident(incident); // ✔️ الآن الـ incident محفوظ
+                history.setIncident(incident);
                 history.setInsAt(LocalDateTime.now());
                 checkpointHistoryRepo.save(history);
             }

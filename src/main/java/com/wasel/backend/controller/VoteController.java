@@ -2,6 +2,7 @@ package com.wasel.backend.controller;
 
 import com.wasel.backend.dto.VoteRequest;
 import com.wasel.backend.service.VoteService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,7 +16,7 @@ public class VoteController {
     }
 
     @PostMapping
-    public String vote(@RequestBody VoteRequest request) {
-        return service.vote(request);
-    }
-}
+    public ResponseEntity<?> vote(@RequestBody VoteRequest request) {
+        var result = service.vote(request);
+        return ResponseEntity.status(201).body(result);
+    }}

@@ -2,10 +2,11 @@ package com.wasel.backend.controller;
 
 import com.wasel.backend.dto.InsertReportRequest;
 import com.wasel.backend.service.InsertReportService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/insert")
+@RequestMapping("/api/reports")
 public class InsertReportController {
 
     private final InsertReportService service;
@@ -14,8 +15,9 @@ public class InsertReportController {
         this.service = service;
     }
 
-    @PostMapping("/report")
-    public String insertReport(@RequestBody InsertReportRequest request) {
-        return service.insertReport(request);
-    }
-}
+
+    @PostMapping
+    public ResponseEntity<?> insertReport(@RequestBody InsertReportRequest request) {
+        var result = service.insertReport(request);
+        return ResponseEntity.status(201).body(result);
+    }}

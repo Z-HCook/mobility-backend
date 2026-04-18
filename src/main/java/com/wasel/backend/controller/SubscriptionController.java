@@ -18,7 +18,7 @@ public class SubscriptionController {
         this.subscriptionService = subscriptionService;
     }
 
-    @PostMapping("/create")
+
     public ResponseEntity<?> subscribe(@RequestBody SubscriptionRequest request) {
         try {
             Subscriptions saved = subscriptionService.createSubscription(request);
@@ -28,7 +28,7 @@ public class SubscriptionController {
         }
     }
 
-    @GetMapping("/user/{userId}")
+
     public ResponseEntity<List<Subscriptions>> getMySubscriptions(@PathVariable int userId) {
         return ResponseEntity.ok(subscriptionService.getSubscriptionsByUserId(userId));
     }

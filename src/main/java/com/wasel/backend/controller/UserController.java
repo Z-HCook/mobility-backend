@@ -2,6 +2,7 @@ package com.wasel.backend.controller;
 
 import com.wasel.backend.model.User;
 import com.wasel.backend.service.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,27 +17,29 @@ public class UserController {
         this.service = service;
     }
 
-    // ✅ Create
+
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return service.createUser(user);
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        User created = service.createUser(user);
+        return ResponseEntity.status(201).body(created);
     }
 
-    // ✅ Get All
+
     @GetMapping
-    public List<User> getAllUsers() {
-        return service.getAllUsers();
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(service.getAllUsers());
     }
 
-    // ✅ Get By Id
+
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable int id) {
-        return service.getUserById(id);
+    public ResponseEntity<User> getUserById(@PathVariable int id) {
+        return ResponseEntity.ok(service.getUserById(id));
     }
 
-    // ✅ Delete
+
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable int id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable int id) {
         service.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }

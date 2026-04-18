@@ -3,10 +3,11 @@ package com.wasel.backend.controller;
 import com.wasel.backend.dto.RouteRequest;
 import com.wasel.backend.model.RouteResponse;
 import com.wasel.backend.service.RouteEstimationService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/routes")
+@RequestMapping("/api/v1/route-estimations")
 public class RouteController {
 
     private final RouteEstimationService routeestimationservice;
@@ -15,8 +16,10 @@ public class RouteController {
         this.routeestimationservice = routeService;
     }
 
-    @PostMapping("/estimate")
-    public RouteResponse estimate(@RequestBody RouteRequest request) {
-        return routeestimationservice.estimateRoute(request);
+
+    @PostMapping
+    public ResponseEntity<RouteResponse> estimate(@RequestBody RouteRequest request) {
+        RouteResponse response = routeestimationservice.estimateRoute(request);
+        return ResponseEntity.status(201).body(response);
     }
 }
