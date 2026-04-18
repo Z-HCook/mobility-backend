@@ -1,6 +1,8 @@
  package com.wasel.backend.service;
-
 import com.wasel.backend.dto.VoteRequest;
+import com.wasel.backend.exception.BusinessRuleException;
+import com.wasel.backend.exception.ResourceNotFoundException;
+import com.wasel.backend.exception.ValidationException;
 import com.wasel.backend.model.*;
 import com.wasel.backend.repository.*;
 import org.springframework.cache.annotation.CacheEvict;
@@ -8,7 +10,6 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class VoteService {
@@ -39,28 +40,25 @@ public class VoteService {
     })
     public String vote(VoteRequest request) {
 
-        if (!userRepo.existsById(request.userId)) {
-            return "User not found";
-        }
+        // 1. user check
+        User user = userRepo.findById(request.userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        // 2. report check
         Report report = reportRepo.findById(request.reportId)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
 
-        if (report == null) {
-            return "Report not found";
-        }
-
+        // 3. validation vote type
         if (request.voteType != 1 && request.voteType != -1) {
-            return "Vote must be +1 or -1";
+            throw new ValidationException("Vote must be +1 or -1");
         }
 
-        if (voteRepo.findByUserIdAndReportId(
-                request.userId,
-                request.reportId
-        ).isPresent()) {
-            return "User already voted";
+        // 4. already voted check
+        if (voteRepo.findByUserIdAndReportId(request.userId, request.reportId).isPresent()) {
+            throw new BusinessRuleException("User already voted");
         }
 
+        // 5. save vote
         ReportVote vote = new ReportVote();
         vote.setUserId(request.userId);
         vote.setReportId(request.reportId);
@@ -69,34 +67,31 @@ public class VoteService {
 
         vote = voteRepo.save(vote);
 
-        List<ReportVote> votes =
-                voteRepo.findByReportId(request.reportId);
-
-        int total = 0;
-
-        for (ReportVote v : votes) {
-            total += v.getVoteType();
-        }
+        // 6. calculate score (simple version)
+        int total = voteRepo.findByReportId(request.reportId)
+                .stream()
+                .mapToInt(ReportVote::getVoteType)
+                .sum();
 
         report.setCredibilityScore((float) total);
         reportRepo.save(report);
 
+        // 7. log moderation
         ReportModerationLog log = new ReportModerationLog();
         log.setReportId(request.reportId);
         log.setModeratorId(request.userId);
         log.setAction("VOTE");
         log.setNote("Vote type: " + request.voteType);
         log.setCreatedAt(LocalDateTime.now());
-
         logRepo.save(log);
 
+        // 8. user activity
         UserActivity activity = new UserActivity();
         activity.setUserId(request.userId);
         activity.setReportId(request.reportId);
         activity.setVoteId(vote.getId());
         activity.setActionType("VOTE");
         activity.setCreatedAt(LocalDateTime.now());
-
         activityRepo.save(activity);
 
         return "Vote added successfully";

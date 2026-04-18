@@ -19,31 +19,31 @@ public class JwtService {
 
     public String generateToken(Integer userId, String role) {
         return Jwts.builder()
-                .subject(userId.toString())
+                .setSubject(userId.toString())   // ✅ التعديل هون
                 .claim("role", role)
-                .issuedAt(new Date())
-                .expiration(
+                .setIssuedAt(new Date())        // برضه الأفضل هيك
+                .setExpiration(
                         new Date(System.currentTimeMillis() + 86400000)
-                ) // 24 hours
+                )
                 .signWith(getKey())
                 .compact();
     }
 
     public String extractUserId(String token) {
-        return Jwts.parser()
-                .verifyWith(getKey())
+        return Jwts.parserBuilder()
+                .setSigningKey(getKey())
                 .build()
-                .parseSignedClaims(token)
-                .getPayload()
+                .parseClaimsJws(token)
+                .getBody()
                 .getSubject();
     }
 
     public String extractRole(String token) {
-        return Jwts.parser()
-                .verifyWith(getKey())
+        return Jwts.parserBuilder()
+                .setSigningKey(getKey())
                 .build()
-                .parseSignedClaims(token)
-                .getPayload()
+                .parseClaimsJws(token)
+                .getBody()
                 .get("role", String.class);
     }
 }

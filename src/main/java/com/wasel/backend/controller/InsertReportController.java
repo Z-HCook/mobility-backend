@@ -1,21 +1,21 @@
-package com.wasel.backend.controller;
+ package com.wasel.backend.controller;
 
 import com.wasel.backend.dto.InsertReportRequest;
-import com.wasel.backend.service.InsertReportService;
+import com.wasel.backend.usecase.InsertReportUseCase;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/insert")
 public class InsertReportController {
 
-    private final InsertReportService service;
+    private final InsertReportUseCase insertReportUseCase;
 
-    public InsertReportController(InsertReportService service) {
-        this.service = service;
+    public InsertReportController(InsertReportUseCase insertReportUseCase) {
+        this.insertReportUseCase = insertReportUseCase;
     }
 
     @PostMapping("/report")
     public String insertReport(@RequestBody InsertReportRequest request) {
-        return service.insertReport(request);
+        return insertReportUseCase.execute(request);
     }
 }

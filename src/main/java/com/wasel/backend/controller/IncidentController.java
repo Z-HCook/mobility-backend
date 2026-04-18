@@ -1,7 +1,7 @@
 package com.wasel.backend.controller;
 
 import com.wasel.backend.dto.VerifyReportRequest;
-import com.wasel.backend.service.IncidentVerificationService;
+import com.wasel.backend.usecase.VerifyReportUseCase;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,15 +9,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/incidents")
 public class IncidentController {
 
-    private final IncidentVerificationService service;
+    private final VerifyReportUseCase verifyReportUseCase;
 
-    public IncidentController(IncidentVerificationService service) {
-        this.service = service;
+    public IncidentController(VerifyReportUseCase verifyReportUseCase) {
+        this.verifyReportUseCase = verifyReportUseCase;
     }
 
     @PostMapping("/verify")
     public ResponseEntity<String> verify(@RequestBody VerifyReportRequest request) {
-        String result = service.verifyReport(request);
+        String result = verifyReportUseCase.execute(request);
         return ResponseEntity.ok(result);
     }
 }

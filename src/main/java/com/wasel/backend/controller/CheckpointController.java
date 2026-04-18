@@ -1,42 +1,23 @@
+
 package com.wasel.backend.controller;
 
-import com.wasel.backend.dto.CheckpointRequest;
-import com.wasel.backend.model.Checkpoint;
-import com.wasel.backend.service.CheckpointService;
+import com.wasel.backend.dto.InsertCheckpointRequest;
+import com.wasel.backend.usecase.InsertCheckpointUseCase;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/checkpoints")
 public class CheckpointController {
 
-    private final CheckpointService checkpointService;
+    private final InsertCheckpointUseCase insertCheckpointUseCase;
 
-    public CheckpointController(CheckpointService checkpointService) {
-        this.checkpointService = checkpointService;
+    public CheckpointController(InsertCheckpointUseCase insertCheckpointUseCase) {
+        this.insertCheckpointUseCase = insertCheckpointUseCase;
     }
-
-
-    //@GetMapping
-    //public List<Checkpoint> getCheckpointHistory() {
-      //  return checkpointService.getCheckpointHistory();
-
-    //}
-
-    //@GetMapping("/{id}")
-    //public Checkpoint getCheckpointById(@PathVariable int id) {
-      //  return checkpointService.getCheckpointById(id);
-    //}
 
     @PostMapping("/insert")
-    public ResponseEntity<?> createCheckpoint(@RequestBody CheckpointRequest request) {
-        return ResponseEntity.ok(checkpointService.createCheckpoint(request));
+    public ResponseEntity<?> createCheckpoint(@RequestBody InsertCheckpointRequest request) {
+        return ResponseEntity.ok(insertCheckpointUseCase.execute(request));
     }
-
-   // @DeleteMapping("/{id}")
-    //public void deleteCheckpoint(@PathVariable int id) {
-       // checkpointService.deleteCheckpoint(id);
-    //}
 }

@@ -47,8 +47,7 @@ public class SubscriptionService {
     @CacheEvict(value = {"subscribers", "userSubscriptions"}, allEntries = true)
     public void deleteSubscription(int id) {
         if (!subscriptionRepository.existsById(id)) {
-            throw new RuntimeException("الاشتراك غير موجود!");
-        }
+            throw new IllegalStateException("Subscription not found");        }
         subscriptionRepository.deleteById(id);
     }
 }

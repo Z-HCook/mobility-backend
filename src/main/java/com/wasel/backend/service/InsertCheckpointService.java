@@ -1,6 +1,9 @@
-package com.wasel.backend.service;
+ package com.wasel.backend.service;
 
 import com.wasel.backend.dto.InsertCheckpointRequest;
+import com.wasel.backend.exception.ResourceNotFoundException;
+import com.wasel.backend.exception.UnauthorizedException;
+import com.wasel.backend.exception.ValidationException;
 import com.wasel.backend.model.Checkpoint;
 import com.wasel.backend.model.User;
 import com.wasel.backend.repository.CheckpointRepository;
@@ -9,7 +12,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 public class InsertCheckpointService {
@@ -25,16 +27,14 @@ public class InsertCheckpointService {
     @CacheEvict(value = "checkpoints", allEntries = true)
     public String insertCheckpoint(InsertCheckpointRequest request) {
 
-        Optional<User> userOpt = userRepository.findById(request.createdById);
-        if (userOpt.isEmpty()) {
-            return "User not found";
-        }
+        if (request.name == null || request.name.isBlank())
+            throw new ValidationException("Checkpoint name is required");
 
-        User user = userOpt.get();
+        User user = userRepository.findById(request.createdById)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (!user.getRole().equalsIgnoreCase("admin")) {
-            return "Only admins can add checkpoints";
-        }
+        if (!user.getRole().equalsIgnoreCase("admin"))
+            throw new UnauthorizedException("Only admins can add checkpoints");
 
         Checkpoint checkpoint = new Checkpoint();
         checkpoint.setName(request.name);

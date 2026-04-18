@@ -1,7 +1,8 @@
+
 package com.wasel.backend.controller;
 
 import com.wasel.backend.model.User;
-import com.wasel.backend.service.UserService;
+import com.wasel.backend.usecase.UserUseCase;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,33 +11,29 @@ import java.util.List;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserService service;
+    private final UserUseCase userUseCase;
 
-    public UserController(UserService service) {
-        this.service = service;
+    public UserController(UserUseCase userUseCase) {
+        this.userUseCase = userUseCase;
     }
 
-    // ✅ Create
     @PostMapping
     public User createUser(@RequestBody User user) {
-        return service.createUser(user);
+        return userUseCase.create(user);
     }
 
-    // ✅ Get All
     @GetMapping
     public List<User> getAllUsers() {
-        return service.getAllUsers();
+        return userUseCase.getAll();
     }
 
-    // ✅ Get By Id
     @GetMapping("/{id}")
     public User getUserById(@PathVariable int id) {
-        return service.getUserById(id);
+        return userUseCase.getById(id);
     }
 
-    // ✅ Delete
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable int id) {
-        service.deleteUser(id);
+        userUseCase.delete(id);
     }
 }
