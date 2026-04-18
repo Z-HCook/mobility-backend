@@ -1,8 +1,7 @@
 package com.wasel.backend.controller;
 
 import com.wasel.backend.dto.RouteRequest;
-import com.wasel.backend.model.RouteResponse;
-import com.wasel.backend.service.RouteEstimationService;
+import com.wasel.backend.dto.RouteResponse;
 import com.wasel.backend.usecase.EstimateRouteUseCase;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
