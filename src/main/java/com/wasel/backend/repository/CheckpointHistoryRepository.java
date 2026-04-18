@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface CheckpointHistoryRepository extends JpaRepository<CheckpointHistory, Integer> {
 
-    // 🔥 لازم تستخدم checkpoint_Id
+
     List<CheckpointHistory> findByCheckpoint_Id(Integer checkpointId);
 
     List<CheckpointHistory> findByCheckpoint_IdAndInsAtBetween(

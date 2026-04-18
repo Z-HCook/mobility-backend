@@ -1,22 +1,25 @@
- package com.wasel.backend.controller;
+package com.wasel.backend.controller;
 
 import com.wasel.backend.dto.RouteRequest;
 import com.wasel.backend.model.RouteResponse;
-import com.wasel.backend.usecase.EstimateRouteUseCase;
+import com.wasel.backend.service.RouteEstimationService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/routes")
 public class RouteController {
 
-    private final EstimateRouteUseCase estimateRouteUseCase;
+    private final RouteEstimationService routeestimationservice;
 
-    public RouteController(EstimateRouteUseCase estimateRouteUseCase) {
-        this.estimateRouteUseCase = estimateRouteUseCase;
+    public RouteController(RouteEstimationService routeService) {
+        this.routeestimationservice = routeService;
     }
 
-    @PostMapping("/estimate")
-    public RouteResponse estimate(@RequestBody RouteRequest request) {
-        return estimateRouteUseCase.execute(request);
+
+    @PostMapping
+    public ResponseEntity<RouteResponse> estimate(@RequestBody RouteRequest request) {
+        RouteResponse response = routeestimationservice.estimateRoute(request);
+        return ResponseEntity.status(201).body(response);
     }
 }
