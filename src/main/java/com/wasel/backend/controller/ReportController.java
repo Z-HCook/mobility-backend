@@ -1,29 +1,28 @@
 package com.wasel.backend.controller;
 
 import com.wasel.backend.dto.InsertReportRequest;
-import com.wasel.backend.service.InsertReportService;
+import com.wasel.backend.service.ReportService;
 import com.wasel.backend.service.RateLimitingService; // 1. استيراد الخدمة
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest; // 2. استيراد لجلب الـ IP
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/insert")
-public class InsertReportController {
+@RequestMapping("/report")
+public class ReportController {
 
-    private final InsertReportService service;
+    private final ReportService service;
     private final RateLimitingService rateLimitingService;
 
-    public InsertReportController(InsertReportService service, RateLimitingService rateLimitingService) {
+    public ReportController(ReportService service, RateLimitingService rateLimitingService) {
         this.service = service;
         this.rateLimitingService = rateLimitingService;
     }
 
 
-    @PostMapping("/report")
+    @PostMapping
     public ResponseEntity<String> insertReport(@RequestBody InsertReportRequest reportRequest, HttpServletRequest request) {
 
         Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());

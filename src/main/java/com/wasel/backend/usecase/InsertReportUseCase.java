@@ -2,15 +2,15 @@
 package com.wasel.backend.usecase;
 
 import com.wasel.backend.dto.InsertReportRequest;
-import com.wasel.backend.service.InsertReportService;
+import com.wasel.backend.service.ReportService;
 import org.springframework.stereotype.Component;
 
 @Component
 public class InsertReportUseCase {
 
-    private final InsertReportService insertReportService;
+    private final ReportService insertReportService;
 
-    public InsertReportUseCase(InsertReportService insertReportService) {
+    public InsertReportUseCase(ReportService insertReportService) {
         this.insertReportService = insertReportService;
     }
 

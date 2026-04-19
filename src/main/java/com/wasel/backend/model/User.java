@@ -1,5 +1,6 @@
 package com.wasel.backend.model;
 
+import com.wasel.backend.exception.ResourceNotFoundException;
 import com.wasel.backend.repository.UserRepository;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -98,4 +99,5 @@ public class User {        // اسم الكلاس Capital Letter، convention ف
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+
 }

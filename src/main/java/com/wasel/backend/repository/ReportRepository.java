@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ReportRepository extends JpaRepository<Report, Integer> {
 
-    // البحث عن تقارير مشابهة لأي مستخدم
+
     @Query(value = """
         SELECT * FROM reports r
         WHERE r.category = :category
@@ -22,7 +22,7 @@ public interface ReportRepository extends JpaRepository<Report, Integer> {
             @Param("endTime") LocalDateTime endTime
     );
 
-    // البحث عن تقارير مشابهة لنفس المستخدم
+
     @Query(value = """
         SELECT * FROM reports r
         WHERE r.user_id = :userId

@@ -44,11 +44,12 @@ public class CheckpointService {
                         "User with id " + request.createdById + " not found"
                 ));
 
-        if (!user.getRole().equalsIgnoreCase("admin")) {
+        if (!"admin".equalsIgnoreCase(user.getRole())) {
             throw new UnauthorizedException("Only admins can add checkpoints");
 
         }
-
+      //  System.out.println(user.getRole());
+        System.out.println(user.getId());
 
 
         Checkpoint checkpoint = new Checkpoint();
