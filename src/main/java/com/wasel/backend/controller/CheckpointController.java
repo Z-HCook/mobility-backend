@@ -22,10 +22,10 @@ import java.util.List;
 public class CheckpointController {
 
     private final CheckpointService checkpointService;
-   private final RateLimitingService rateLimitingService;
-   private  final InsertCheckpointUseCase insertCheckpointUseCase;
+    private final RateLimitingService rateLimitingService;
+    private final InsertCheckpointUseCase insertCheckpointUseCase;
 
-    public CheckpointController(CheckpointService checkpointService , RateLimitingService rateLimitingService , InsertCheckpointUseCase insertCheckpointUseCase) {
+    public CheckpointController(CheckpointService checkpointService, RateLimitingService rateLimitingService, InsertCheckpointUseCase insertCheckpointUseCase) {
         this.insertCheckpointUseCase = insertCheckpointUseCase;
         this.checkpointService = checkpointService;
         this.rateLimitingService = rateLimitingService;
@@ -43,9 +43,9 @@ public class CheckpointController {
         }
     }
 
-    @GetMapping ("/{id}/timeperiod")
+    @GetMapping("/{id}/timeperiod")
     public ResponseEntity<?> getCheckpointHistorybydate(@PathVariable Integer id, @RequestParam(required = false) LocalDateTime start,
-                                                  @RequestParam(required = false) LocalDateTime end, HttpServletRequest request) {
+                                                        @RequestParam(required = false) LocalDateTime end, HttpServletRequest request) {
 
         Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
 
@@ -75,9 +75,8 @@ public class CheckpointController {
                     .body("You have exceeded the limit for creating checkpoints. Please try again later.");
         }
 
-            return ResponseEntity.status(200)
-                    .body(insertCheckpointUseCase.execute(checkpointRequest));
-
+        return ResponseEntity.status(200)
+                .body(insertCheckpointUseCase.execute(checkpointRequest));
 
 
     }

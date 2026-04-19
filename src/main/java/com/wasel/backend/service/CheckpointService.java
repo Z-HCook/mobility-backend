@@ -48,7 +48,7 @@ public class CheckpointService {
             throw new UnauthorizedException("Only admins can add checkpoints");
 
         }
-      //  System.out.println(user.getRole());
+        //  System.out.println(user.getRole());
         System.out.println(user.getId());
 
 
@@ -88,27 +88,44 @@ public class CheckpointService {
     }
 */
 
-
-
-
-    @Cacheable(value = "checkpointHistory", key = "#checkpointId")
     public List<CheckpointHistory> getByCheckpointId(Integer checkpointId) {
-        return checkpointHistoryRepository.findByCheckpoint_Id(checkpointId);
+        List<CheckpointHistory> history =
+                checkpointHistoryRepository.findByCheckpoint_Id(checkpointId);
+
+        if (history.isEmpty()) {
+            throw new ResourceNotFoundException("Checkpoint not found");
+        }
+
+        return history;
     }
 
 
-    @Cacheable(value = "checkpointHistoryRange", key = "#checkpointId.toString() + #start.toString() + #end.toString()")
+    @Cacheable(value = "checkpointHistoryRange",
+            key = "#checkpointId.toString() + #start.toString() + #end.toString()")
     public List<CheckpointHistory> getByCheckpointIdAndDate(
             Integer checkpointId,
             LocalDateTime start,
             LocalDateTime end
     ) {
-        if(checkpointId ==0 ||checkpointId ==null  )
-        {
 
+        if (checkpointId == null || checkpointId == 0) {
+            throw new ResourceNotFoundException("Checkpoint ID is invalid");
         }
-        return checkpointHistoryRepository.findByCheckpoint_IdAndInsAtBetween(
-                checkpointId, start, end);
 
+
+        if (!checkpointRepository.existsById(checkpointId)) {
+            throw new ResourceNotFoundException("Checkpoint not found");
+        }
+
+        List<CheckpointHistory> history =
+                checkpointHistoryRepository.findByCheckpoint_IdAndInsAtBetween(
+                        checkpointId, start, end);
+
+
+        if (history.isEmpty()) {
+            throw new ResourceNotFoundException("No data found for this checkpoint in the given date range");
+        }
+
+        return history;
     }
 }

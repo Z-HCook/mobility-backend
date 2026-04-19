@@ -5,13 +5,17 @@ import com.wasel.backend.model.*;
 import com.wasel.backend.repository.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 @Service
@@ -41,8 +45,15 @@ public class IncidentService {
         this.logRepo = logRepo;
         this.checkpointRepo = checkpointRepo;
         this.checkpointHistoryRepo = checkpointHistoryRepo;
-          this.alertService = alertService;
+        this.alertService = alertService;
 
+    }
+
+    @Transactional
+    public Incident createIncident(Incident incident) {
+        incident.setCreatedAt(LocalDateTime.now());
+        incident.setStatus("OPEN");
+        return incidentRepo.save(incident);
     }
     public int countIncidentsNearRouteEndpoints(RouteRequest request) {
         final Incident incident = null;
@@ -161,6 +172,105 @@ public class IncidentService {
     }
 
 
+    /*
+    @Transactional
+    public String verifyReport(VerifyReportRequest request) {
+        Report report = reportService.getReport(request.getReportId());
+        User moderator = userService.getModerator(request.getModeratorId());
 
+        if (report.getLinkedCheckpointId() == null) {
+            throw new IllegalArgumentException("Checkpoint is missing for this report");
+        }
+        if (request.getReportId() == null || request.getModeratorId() == null) {
+            throw new IllegalArgumentException("reportId and moderatorId are required");
+        }
 
+        reportService.validate(report);
+
+        Incident incident = new Incident();
+        incident.setTitle(
+                (report.getTitle() != null && !report.getTitle().isBlank())
+                        ? report.getTitle()
+                        : report.getCategory() + " incident"
+
+        );
+        incident.setDescription(report.getDescription());
+        incident.setType(mapType(report.getCategory()));
+        incident.setSeverity("MEDIUM");
+        incident.setStatus("VERIFIED");
+
+        incident.setReportedBy(report.getUserId());
+        incident.setVerifiedBy(moderator.getId());
+
+        incident.setLatitude(report.getLatitude());
+        incident.setLongitude(report.getLongitude());
+        incident.setCreatedAt(LocalDateTime.now());
+
+        incident = repo.save(incident);
+
+        reportService.markAsVerified(report, incident);
+        historyService.logVerification(report, moderator, incident);
+        checkpointService.handleCheckpoint(report, incident);
+
+        return "Verified successfully";
+    }
+*/
+    // ✅ pagination بدل findAll — هذا كان السبب الرئيسي للبطء
+    @Cacheable(value = "incidents", key = "#page + '-' + #size")
+    @Transactional(readOnly = true)
+    public List<Incident> getAllIncidents(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return incidentRepo.findAllByOrderByCreatedAtDesc(pageable).getContent();
+    }
+    @Transactional(readOnly = true)
+    public Incident getIncidentById(int id) {
+        return incidentRepo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Incident not found: " + id));
+    }
+
+    @Transactional
+    public void deleteIncident(int id) {
+        if (!incidentRepo.existsById(id)) {
+            throw new NoSuchElementException("Incident not found: " + id);
+        }
+        incidentRepo.deleteById(id);
+    }
+
+    @Transactional
+    public Incident updateStatus(int id, String status) {
+        Incident incident = getIncidentById(id);
+
+        if (!List.of("OPEN", "CLOSED", "VERIFIED").contains(status)) {
+            throw new IllegalArgumentException("Invalid status value");
+        }
+
+        incident.setStatus(status); // 🔥 مهم
+        return incidentRepo.save(incident);
+    }
+
+    @Transactional
+    public Incident closeIncident(int id) {
+        Incident incident = getIncidentById(id);
+        incident.setStatus("CLOSED");
+        incident.setClosedAt(LocalDateTime.now());
+        return incidentRepo.save(incident);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Incident> getByStatus(String status, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        if (!List.of("OPEN", "CLOSED", "VERIFIED").contains(status)) {
+            throw new IllegalArgumentException("Invalid status value");
+        }
+        return incidentRepo.findByStatusOrderByCreatedAtDesc(status, pageable).getContent();
+    }
+
+    private String mapType(String category) {
+        return switch (category.toLowerCase()) {
+            case "traffic" -> "DELAY";
+            case "safety" -> "ACCIDENT";
+            case "weather" -> "WEATHER";
+            default -> "CLOSURE";
+        };
+    }
 }

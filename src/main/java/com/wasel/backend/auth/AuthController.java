@@ -1,5 +1,6 @@
 package com.wasel.backend.auth;
 
+import com.wasel.backend.exception.UnauthorizedException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,7 +19,7 @@ public class AuthController {
         LoginResponse response = service.login(request);
 
         if (response == null) {
-            return "Invalid email or password";
+            throw new UnauthorizedException("Invalid email or password");
         }
 
         return response;

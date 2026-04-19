@@ -40,7 +40,7 @@ public class SubscriptionController {
                 Subscriptions saved = subscriptionUseCase.create( subscriptionRequest);
                 return ResponseEntity.status(200).body(saved);
             } catch (Exception e) {
-                return ResponseEntity.status(500).body("Error: " + e.getMessage());
+                return ResponseEntity.status(400).body("Error: " + e.getMessage());
             }
         } else {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)

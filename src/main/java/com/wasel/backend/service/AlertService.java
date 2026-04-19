@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class AlertService {
+public class AlertService implements Alerts{
 
     private final AlertRepository alertRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -23,16 +23,16 @@ public class AlertService {
         this.subscriptionRepository = subscriptionRepository;
     }
 
+    @Override
     @Transactional
     public void createAlertsForIncident(Incident incident) {
         String normalizedType = normalizeType(incident.getType());
-        final Incident insedant = null;
 
         List<Subscriptions> subscribers = subscriptionRepository.findByIncidentType(incident.getType());
 
         if (subscribers != null) {
             for (Subscriptions sub : subscribers) {
-                double distance = insedant.distance(
+                double distance = incident.distance(
                         incident.getLatitude(), incident.getLongitude(),
                         sub.getLatitude(), sub.getLongitude()
                 );

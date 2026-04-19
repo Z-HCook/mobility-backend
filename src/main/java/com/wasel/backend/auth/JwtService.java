@@ -18,12 +18,13 @@ public class JwtService {
     }
 
     public String generateToken(Integer userId, String role) {
+        long EXPIRATION_TIME = 1000L * 60 * 60 * 24 * 30;
         return Jwts.builder()
                 .setSubject(userId.toString())   // ✅ التعديل هون
                 .claim("role", role)
                 .setIssuedAt(new Date())        // برضه الأفضل هيك
                 .setExpiration(
-                        new Date(System.currentTimeMillis() + 86400000)
+                        new Date(System.currentTimeMillis() + EXPIRATION_TIME)
                 )
                 .signWith(getKey())
                 .compact();
