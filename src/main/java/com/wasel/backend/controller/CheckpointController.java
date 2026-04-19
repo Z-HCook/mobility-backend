@@ -30,7 +30,6 @@ public class CheckpointController {
         this.checkpointService = checkpointService;
         this.rateLimitingService = rateLimitingService;
     }
-
     @GetMapping("/{id}/history")
     public ResponseEntity<?> getCheckpointHistory(@PathVariable Integer id, HttpServletRequest request) {
         Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
@@ -64,7 +63,6 @@ public class CheckpointController {
                     .body("Slow down! You've reached the limit of requests per minute.");
         }
     }
-
     @PostMapping
     public ResponseEntity<?> createCheckpoint(@RequestBody InsertCheckpointRequest checkpointRequest, HttpServletRequest request) {
 

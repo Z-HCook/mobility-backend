@@ -30,6 +30,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/incidents/**").hasAuthority("admin")
                         .requestMatchers("/api/votes/**").hasAuthority("user") // فقط اليوزر العادي
                         .requestMatchers("/insert/**").hasAnyAuthority("user", "admin")
+                     //   .requestMatchers("/checkpoints/**").hasAuthority("admin")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
@@ -39,4 +40,5 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 }

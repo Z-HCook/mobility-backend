@@ -23,7 +23,7 @@ public class RateLimitingService {
     private Bucket newBucket(String clientIp) {
         // الحد: 10 طلبات في الدقيقة
         return Bucket.builder()
-                .addLimit(Bandwidth.classic(10, Refill.intervally(10, Duration.ofMinutes(1))))
+                .addLimit(Bandwidth.classic(1000, Refill.intervally(1000, Duration.ofMinutes(1))))
                 .build();
     }
 }

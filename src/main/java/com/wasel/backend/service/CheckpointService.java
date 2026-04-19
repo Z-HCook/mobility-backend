@@ -12,6 +12,7 @@ import com.wasel.backend.repository.CheckpointRepository;
 import com.wasel.backend.repository.UserRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -37,21 +38,21 @@ public class CheckpointService {
     @CacheEvict(value = "checkpoints", allEntries = true)
     public String insertCheckpoint(InsertCheckpointRequest request) {
 
+        // ✅ نجيب المستخدم من التوكن
+        String userId = (String) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
-        User user = userRepository.findById(request.getCreatedById())
+        User user = userRepository.findById(Integer.parseInt(userId))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User with id " + request.getCreatedById() + " not found"
-                ));
-
+        // ✅ تحقق انه admin
         if (!"admin".equalsIgnoreCase(user.getRole())) {
             throw new UnauthorizedException("Only admins can add checkpoints");
-
         }
-        //  System.out.println(user.getRole());
-        System.out.println(user.getId());
 
-
+        // ✅ إنشاء checkpoint
         Checkpoint checkpoint = new Checkpoint();
         checkpoint.setName(request.getName());
         checkpoint.setLatitude(request.getLatitude());
@@ -63,32 +64,7 @@ public class CheckpointService {
         checkpointRepository.save(checkpoint);
 
         return "Checkpoint inserted successfully";
-    }
-
- /*   @CacheEvict(value = "checkpoints", allEntries = true)
-    public String createCheckpoint(CheckpointRequest request) {
-
-
-        if (request.getName() == null || request.getName().isEmpty()) {
-            throw new RuntimeException("Checkpoint name is required");
-        }
-
-        User user = userRepository.findById(request.getCreatedBy())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Checkpoint checkpoint = new Checkpoint();
-        checkpoint.setName(request.getName());
-        checkpoint.setLatitude(request.getLatitude());
-        checkpoint.setLongitude(request.getLongitude());
-        checkpoint.setDescription(request.getDescription());
-        checkpoint.setCreatedBy(user);
-
-        checkpointRepository.save(checkpoint);
-        return "successful";
-    }
-*/
-
-    public List<CheckpointHistory> getByCheckpointId(Integer checkpointId) {
+    }public List<CheckpointHistory> getByCheckpointId(Integer checkpointId) {
         List<CheckpointHistory> history =
                 checkpointHistoryRepository.findByCheckpoint_Id(checkpointId);
 

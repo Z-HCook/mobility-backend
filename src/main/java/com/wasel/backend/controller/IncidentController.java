@@ -3,8 +3,13 @@ package com.wasel.backend.controller;
 import com.wasel.backend.dto.VerifyReportRequest;
 import com.wasel.backend.model.Incident;
 import com.wasel.backend.service.IncidentService;
+import com.wasel.backend.service.RateLimitingService;
+import com.wasel.backend.usecase.VerifyReportUseCase;
+import io.github.bucket4j.Bucket;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,15 +19,28 @@ import java.util.List;
 public class IncidentController {
 
     private final IncidentService service;
-
-    public IncidentController(IncidentService service) {
+    private final  RateLimitingService rateLimitingService;
+   private final VerifyReportUseCase verifyReportUseCase;
+    public IncidentController(IncidentService service, RateLimitingService rateLimitingService, VerifyReportUseCase verifyReportUseCase) {
         this.service = service;
+        this.rateLimitingService = rateLimitingService;
+        this.verifyReportUseCase = verifyReportUseCase;
     }
 
     @PostMapping
-    public ResponseEntity<Incident> create(@RequestBody Incident incident) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.createIncident(incident));
+    public ResponseEntity<String> verify(@RequestBody VerifyReportRequest verifyRequest, HttpServletRequest request) {
+
+
+        Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
+
+        if (bucket.tryConsume(1)) {
+
+            String result =verifyReportUseCase.execute(verifyRequest);
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body("Too many verification attempts. Please wait a minute before trying again.");
+        }
     }
 
     @PostMapping("/verify")

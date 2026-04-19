@@ -1,6 +1,10 @@
 package com.wasel.backend.service;
 import com.wasel.backend.dto.RouteRequest;
 import com.wasel.backend.dto.VerifyReportRequest;
+import com.wasel.backend.exception.BusinessRuleException;
+import com.wasel.backend.exception.ResourceNotFoundException;
+import com.wasel.backend.exception.UnauthorizedException;
+import com.wasel.backend.exception.ValidationException;
 import com.wasel.backend.model.*;
 import com.wasel.backend.repository.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -88,30 +92,24 @@ public class IncidentService {
     })
     public String verifyReport(VerifyReportRequest request) {
 
-
-        Report report = reportRepo.findById(request.getReportId()).orElse(null);
-        if (report == null) return "Report not found";
-
+        Report report = reportRepo.findById(request.getReportId())
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
 
         if (!Boolean.TRUE.equals(report.getIsPromoted())) {
-            return "Report is not eligible for verification";
+            throw new BusinessRuleException("Report is not eligible for verification");
         }
 
-
-        User moderator = userRepo.findById(request.getModeratorId()).orElse(null);
-        if (moderator == null) return "Moderator not found";
-
+        User moderator = userRepo.findById(request.getModeratorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Moderator not found"));
 
         if (!moderator.getRole().equalsIgnoreCase("admin")
                 && !moderator.getRole().equalsIgnoreCase("moderator")) {
-            return "Unauthorized";
+            throw new UnauthorizedException("Unauthorized");
         }
-
 
         if ("verified".equalsIgnoreCase(report.getStatus())) {
-            return "Report already verified";
+            throw new ValidationException("Report already verified");
         }
-
 
         Incident incident = new Incident();
         incident.setTitle(report.getCategory());
@@ -130,13 +128,9 @@ public class IncidentService {
 
         alertService.createAlertsForIncident(incident);
 
-
-
-
         report.setStatus("verified");
         report.setLinkedIncidentId(incident.getId());
         reportRepo.save(report);
-
 
         ReportModerationLog log = new ReportModerationLog();
         log.setReportId(report.getId());
@@ -145,7 +139,6 @@ public class IncidentService {
         log.setNote("Created incident ID: " + incident.getId());
         log.setCreatedAt(LocalDateTime.now());
         logRepo.save(log);
-
 
         if (report.getLinkedCheckpointId() != null) {
             Checkpoint checkpoint = checkpointRepo.findById(report.getLinkedCheckpointId()).orElse(null);
@@ -160,7 +153,6 @@ public class IncidentService {
 
         return "Report verified and incident created";
     }
-
 
     private String mapCategoryToType(String category) {
         return switch (category.toLowerCase()) {
