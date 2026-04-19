@@ -38,10 +38,10 @@ public class CheckpointService {
     public String insertCheckpoint(InsertCheckpointRequest request) {
 
 
-        User user = userRepository.findById(request.createdById)
+        User user = userRepository.findById(request.getCreatedById())
 
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "User with id " + request.createdById + " not found"
+                        "User with id " + request.getCreatedById() + " not found"
                 ));
 
         if (!"admin".equalsIgnoreCase(user.getRole())) {
@@ -53,10 +53,10 @@ public class CheckpointService {
 
 
         Checkpoint checkpoint = new Checkpoint();
-        checkpoint.setName(request.name);
-        checkpoint.setLatitude(request.latitude);
-        checkpoint.setLongitude(request.longitude);
-        checkpoint.setDescription(request.description);
+        checkpoint.setName(request.getName());
+        checkpoint.setLatitude(request.getLatitude());
+        checkpoint.setLongitude(request.getLongitude());
+        checkpoint.setDescription(request.getDescription());
         checkpoint.setCreatedBy(user);
         checkpoint.setCreatedAt(LocalDateTime.now());
 
@@ -65,16 +65,34 @@ public class CheckpointService {
         return "Checkpoint inserted successfully";
     }
 
+ /*   @CacheEvict(value = "checkpoints", allEntries = true)
+    public String createCheckpoint(CheckpointRequest request) {
+
+
+        if (request.getName() == null || request.getName().isEmpty()) {
+            throw new RuntimeException("Checkpoint name is required");
+        }
+
+        User user = userRepository.findById(request.getCreatedBy())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Checkpoint checkpoint = new Checkpoint();
+        checkpoint.setName(request.getName());
+        checkpoint.setLatitude(request.getLatitude());
+        checkpoint.setLongitude(request.getLongitude());
+        checkpoint.setDescription(request.getDescription());
+        checkpoint.setCreatedBy(user);
+
+        checkpointRepository.save(checkpoint);
+        return "successful";
+    }
+*/
+
 
 
 
     @Cacheable(value = "checkpointHistory", key = "#checkpointId")
     public List<CheckpointHistory> getByCheckpointId(Integer checkpointId) {
-        boolean exists = checkpointRepository.existsById(checkpointId);
-
-        if (!exists) {
-            throw new ResourceNotFoundException("Checkpoint with id " + checkpointId + " not found");
-        }
         return checkpointHistoryRepository.findByCheckpoint_Id(checkpointId);
     }
 
@@ -85,10 +103,9 @@ public class CheckpointService {
             LocalDateTime start,
             LocalDateTime end
     ) {
-        boolean exists = checkpointRepository.existsById(checkpointId);
+        if(checkpointId ==0 ||checkpointId ==null  )
+        {
 
-        if (!exists) {
-            throw new ResourceNotFoundException("Checkpoint with id " + checkpointId + " not found");
         }
         return checkpointHistoryRepository.findByCheckpoint_IdAndInsAtBetween(
                 checkpointId, start, end);
