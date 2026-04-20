@@ -5,7 +5,10 @@ import com.wasel.backend.model.Incident;
 import com.wasel.backend.model.Report;
 import com.wasel.backend.model.User;
 import com.wasel.backend.repository.IncidentRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +27,6 @@ public class IncidentService {
                            UserService userService,
                            CheckpointService checkpointService,
                            CheckpointHistoryService historyService) {
-
         this.repo = repo;
         this.reportService = reportService;
         this.userService = userService;
@@ -32,19 +34,17 @@ public class IncidentService {
         this.historyService = historyService;
     }
 
-    // 🔹 CREATE مباشر
+    @Transactional
     public Incident createIncident(Incident incident) {
         incident.setCreatedAt(LocalDateTime.now());
         incident.setStatus("OPEN");
         return repo.save(incident);
     }
 
-    // 🔹 VERIFY (🔥 دمجنا كل اللوجيك هون)
+    @Transactional
     public String verifyReport(VerifyReportRequest request) {
-
         Report report = reportService.getReport(request.getReportId());
         User moderator = userService.getModerator(request.getModeratorId());
-
         reportService.validate(report);
 
         Incident incident = new Incident();
@@ -53,10 +53,8 @@ public class IncidentService {
         incident.setType(mapType(report.getCategory()));
         incident.setSeverity("MEDIUM");
         incident.setStatus("VERIFIED");
-
         incident.setReportedBy(report.getUserId());
         incident.setVerifiedBy(moderator.getId());
-
         incident.setLatitude(report.getLatitude());
         incident.setLongitude(report.getLongitude());
 
@@ -69,40 +67,33 @@ public class IncidentService {
         return "Verified successfully";
     }
 
-    // 🔹 بدل Mapper
-    private String mapType(String category) {
-        return switch (category.toLowerCase()) {
-            case "traffic" -> "DELAY";
-            case "safety" -> "ACCIDENT";
-            case "weather" -> "WEATHER";
-            default -> "CLOSURE";
-        };
+    // ✅ pagination بدل findAll — هذا كان السبب الرئيسي للبطء
+    @Transactional(readOnly = true)
+    public List<Incident> getAllIncidents(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return repo.findAllByOrderByCreatedAtDesc(pageable).getContent();
     }
 
-    // 🔹 GET ALL
-    public List<Incident> getAllIncidents() {
-        return repo.findAll();
-    }
-
-    // 🔹 GET BY ID
+    @Transactional(readOnly = true)
     public Incident getIncidentById(int id) {
         return repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Incident not found"));
+                .orElseThrow(() -> new RuntimeException("Incident not found: " + id));
     }
 
-    // 🔹 DELETE
+    @Transactional
     public void deleteIncident(int id) {
+        if (!repo.existsById(id)) throw new RuntimeException("Incident not found: " + id);
         repo.deleteById(id);
     }
 
-    // 🔹 UPDATE STATUS
+    @Transactional
     public Incident updateStatus(int id, String status) {
         Incident incident = getIncidentById(id);
         incident.setStatus(status);
         return repo.save(incident);
     }
 
-    // 🔹 CLOSE
+    @Transactional
     public Incident closeIncident(int id) {
         Incident incident = getIncidentById(id);
         incident.setStatus("CLOSED");
@@ -110,8 +101,18 @@ public class IncidentService {
         return repo.save(incident);
     }
 
-    // 🔹 FILTER
-    public List<Incident> getByStatus(String status) {
-        return repo.findByStatus(status);
+    @Transactional(readOnly = true)
+    public List<Incident> getByStatus(String status, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return repo.findByStatusOrderByCreatedAtDesc(status, pageable).getContent();
+    }
+
+    private String mapType(String category) {
+        return switch (category.toLowerCase()) {
+            case "traffic" -> "DELAY";
+            case "safety"  -> "ACCIDENT";
+            case "weather" -> "WEATHER";
+            default        -> "CLOSURE";
+        };
     }
 }
