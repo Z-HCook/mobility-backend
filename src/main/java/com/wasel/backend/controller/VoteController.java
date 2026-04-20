@@ -5,7 +5,7 @@ import com.wasel.backend.service.VoteService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/votes")
+@RequestMapping("/api/v1/votes")
 public class VoteController {
 
     private final VoteService service;

@@ -8,16 +8,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/ch")
+@RequestMapping("/api/v1/checkpoint-history")  // ← هون بس، امسح "/ch"
 public class CheckpointHistoryController {
 
     private final CheckpointHistoryService service;
-
     public CheckpointHistoryController(CheckpointHistoryService service) {
         this.service = service;
     }
 
-    @GetMapping("/{id}/history")
+    @GetMapping("/{id}/history")                 // ← GET + {id} موجود
     public List<CheckpointHistory> getCheckpointHistory(@PathVariable Integer id) {
         return service.getByCheckpointId(id);
     }
@@ -30,4 +29,6 @@ public class CheckpointHistoryController {
     ) {
         return service.getByCheckpointIdAndDate(id, start, end);
     }
+
+
 }

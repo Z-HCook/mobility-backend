@@ -5,6 +5,7 @@ import com.wasel.backend.model.Incident;
 import com.wasel.backend.model.Report;
 import com.wasel.backend.model.User;
 import com.wasel.backend.repository.IncidentRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -83,12 +84,12 @@ public class IncidentService {
     }
 
     // ✅ pagination بدل findAll — هذا كان السبب الرئيسي للبطء
+    @Cacheable(value = "incidents", key = "#page + '-' + #size")
     @Transactional(readOnly = true)
     public List<Incident> getAllIncidents(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return repo.findAllByOrderByCreatedAtDesc(pageable).getContent();
     }
-
     @Transactional(readOnly = true)
     public Incident getIncidentById(int id) {
         return repo.findById(id)
@@ -125,10 +126,11 @@ public class IncidentService {
     private String mapType(String category) {
         return switch (category.toLowerCase()) {
             case "traffic" -> "DELAY";
-            case "safety"  -> "ACCIDENT";
+            case "safety" -> "ACCIDENT";
             case "weather" -> "WEATHER";
-            default        -> "CLOSURE";
+            default -> "CLOSURE";
         };
     }
+
 
 }
