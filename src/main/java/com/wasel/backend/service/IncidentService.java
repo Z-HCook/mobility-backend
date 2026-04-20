@@ -43,28 +43,43 @@ public class IncidentService {
 
     @Transactional
     public String verifyReport(VerifyReportRequest request) {
-        Report report = reportService.getReport(request.getReportId());
-        User moderator = userService.getModerator(request.getModeratorId());
-        reportService.validate(report);
+        try {
 
-        Incident incident = new Incident();
-        incident.setTitle(report.getTitle());
-        incident.setDescription(report.getDescription());
-        incident.setType(mapType(report.getCategory()));
-        incident.setSeverity("MEDIUM");
-        incident.setStatus("VERIFIED");
-        incident.setReportedBy(report.getUserId());
-        incident.setVerifiedBy(moderator.getId());
-        incident.setLatitude(report.getLatitude());
-        incident.setLongitude(report.getLongitude());
+            Report report = reportService.getReport(request.getReportId());
+            User moderator = userService.getModerator(request.getModeratorId());
 
-        repo.save(incident);
+            reportService.validate(report);
 
-        reportService.markAsVerified(report, incident);
-        historyService.logVerification(report, moderator, incident);
-        checkpointService.handleCheckpoint(report, incident);
+            Incident incident = new Incident();
+            incident.setTitle(
+                    (report.getTitle() != null && !report.getTitle().isBlank())
+                            ? report.getTitle()
+                            : report.getCategory() + " incident"
+            );
+            incident.setDescription(report.getDescription());
+            incident.setType(mapType(report.getCategory()));
+            incident.setSeverity("MEDIUM");
+            incident.setStatus("VERIFIED");
 
-        return "Verified successfully";
+            incident.setReportedBy(report.getUserId());
+            incident.setVerifiedBy(moderator.getId());
+
+            incident.setLatitude(report.getLatitude());
+            incident.setLongitude(report.getLongitude());
+            incident.setCreatedAt(LocalDateTime.now());
+
+            repo.save(incident);
+
+            reportService.markAsVerified(report, incident);
+            historyService.logVerification(report, moderator, incident);
+            checkpointService.handleCheckpoint(report, incident);
+
+            return "Verified successfully";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Verification failed: " + e.getMessage());
+        }
     }
 
     // ✅ pagination بدل findAll — هذا كان السبب الرئيسي للبطء
@@ -115,4 +130,5 @@ public class IncidentService {
             default        -> "CLOSURE";
         };
     }
+
 }
