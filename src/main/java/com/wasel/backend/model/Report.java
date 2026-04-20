@@ -3,6 +3,8 @@ package com.wasel.backend.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+
+
 @Entity
 @Table(name = "reports")
 public class Report {
@@ -23,7 +25,7 @@ public class Report {
     private Double longitude;
 
     private String status;
-
+    private String title;
 
     @Column(name = "credibility_score")
     private Float credibilityScore;
@@ -50,54 +52,131 @@ public class Report {
 
     @Column(name = "duplicate_count")
     private Integer duplicateCount;
+
     // Constructors
-    public Report() {}
+    public Report() {
+    }
 
     // Getters & Setters
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Integer getId() {
+        return id;
+    }
 
-    public Integer getUserId() { return userId; }
-    public void setUserId(Integer userId) { this.userId = userId; }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public Integer getUserId() {
+        return userId;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
 
-    public Double getLatitude() { return latitude; }
-    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public String getCategory() {
+        return category;
+    }
 
-    public Double getLongitude() { return longitude; }
-    public void setLongitude(Double longitude) { this.longitude = longitude; }
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getDescription() {
+        return description;
+    }
 
-    public Float getCredibilityScore() { return credibilityScore; }
-    public void setCredibilityScore(Float credibilityScore) { this.credibilityScore = credibilityScore; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public Integer getDuplicateOf() { return duplicateOf; }
-    public void setDuplicateOf(Integer duplicateOf) { this.duplicateOf = duplicateOf; }
+    public Double getLatitude() {
+        return latitude;
+    }
 
-    public Integer getLinkedIncidentId() { return linkedIncidentId; }
-    public void setLinkedIncidentId(Integer linkedIncidentId) { this.linkedIncidentId = linkedIncidentId; }
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
 
-    public Integer getLinkedCheckpointId() { return linkedCheckpointId; }
-    public void setLinkedCheckpointId(Integer linkedCheckpointId) { this.linkedCheckpointId = linkedCheckpointId; }
+    public Double getLongitude() {
+        return longitude;
+    }
 
-    public Boolean getIsPromoted() { return isPromoted; }
-    public void setIsPromoted(Boolean isPromoted) { this.isPromoted = isPromoted; }
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getStatus() {
+        return status;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public Float getCredibilityScore() {
+        return credibilityScore;
+    }
+
+    public void setCredibilityScore(Float credibilityScore) {
+        this.credibilityScore = credibilityScore;
+    }
+
+    public Integer getDuplicateOf() {
+        return duplicateOf;
+    }
+
+    public void setDuplicateOf(Integer duplicateOf) {
+        this.duplicateOf = duplicateOf;
+    }
+
+    public Integer getLinkedIncidentId() {
+        return linkedIncidentId;
+    }
+
+    public void setLinkedIncidentId(Integer linkedIncidentId) {
+        this.linkedIncidentId = linkedIncidentId;
+    }
+
+    public Integer getLinkedCheckpointId() {
+        return linkedCheckpointId;
+    }
+
+    public void setLinkedCheckpointId(Integer linkedCheckpointId) {
+        this.linkedCheckpointId = linkedCheckpointId;
+    }
+
+    public Boolean getIsPromoted() {
+        return isPromoted;
+    }
+
+    public void setIsPromoted(Boolean isPromoted) {
+        this.isPromoted = isPromoted;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public Integer getDuplicateCount() {
         return duplicateCount;
@@ -107,4 +186,11 @@ public class Report {
         this.duplicateCount = duplicateCount;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
 }
