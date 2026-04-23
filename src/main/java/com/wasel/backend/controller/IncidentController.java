@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/incidents") // ✅ أضفنا v1
+@RequestMapping("/api/v1/incidents")
 public class IncidentController {
 
     private final IncidentService service;

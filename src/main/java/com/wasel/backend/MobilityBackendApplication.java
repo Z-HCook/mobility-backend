@@ -10,7 +10,7 @@ import java.sql.Statement;
 
 
 @SpringBootApplication
-@EnableCaching   // ← هاي ضرورية وإلا @Cacheable ما رح تشتغل
+@EnableCaching
 public class MobilityBackendApplication {
     public static void main(String[] args) {
         SpringApplication.run(MobilityBackendApplication.class, args);

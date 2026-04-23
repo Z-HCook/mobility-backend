@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class IncidentService {
@@ -41,46 +42,46 @@ public class IncidentService {
         incident.setStatus("OPEN");
         return repo.save(incident);
     }
-
     @Transactional
     public String verifyReport(VerifyReportRequest request) {
-        try {
+        Report report = reportService.getReport(request.getReportId());
+        User moderator = userService.getModerator(request.getModeratorId());
 
-            Report report = reportService.getReport(request.getReportId());
-            User moderator = userService.getModerator(request.getModeratorId());
-
-            reportService.validate(report);
-
-            Incident incident = new Incident();
-            incident.setTitle(
-                    (report.getTitle() != null && !report.getTitle().isBlank())
-                            ? report.getTitle()
-                            : report.getCategory() + " incident"
-            );
-            incident.setDescription(report.getDescription());
-            incident.setType(mapType(report.getCategory()));
-            incident.setSeverity("MEDIUM");
-            incident.setStatus("VERIFIED");
-
-            incident.setReportedBy(report.getUserId());
-            incident.setVerifiedBy(moderator.getId());
-
-            incident.setLatitude(report.getLatitude());
-            incident.setLongitude(report.getLongitude());
-            incident.setCreatedAt(LocalDateTime.now());
-
-            repo.save(incident);
-
-            reportService.markAsVerified(report, incident);
-            historyService.logVerification(report, moderator, incident);
-            checkpointService.handleCheckpoint(report, incident);
-
-            return "Verified successfully";
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Verification failed: " + e.getMessage());
+        if (report.getLinkedCheckpointId() == null) {
+            throw new IllegalArgumentException("Checkpoint is missing for this report");
         }
+        if (request.getReportId() == null || request.getModeratorId() == null) {
+            throw new IllegalArgumentException("reportId and moderatorId are required");
+        }
+
+        reportService.validate(report);
+
+        Incident incident = new Incident();
+        incident.setTitle(
+                (report.getTitle() != null && !report.getTitle().isBlank())
+                        ? report.getTitle()
+                        : report.getCategory() + " incident"
+
+        );
+        incident.setDescription(report.getDescription());
+        incident.setType(mapType(report.getCategory()));
+        incident.setSeverity("MEDIUM");
+        incident.setStatus("VERIFIED");
+
+        incident.setReportedBy(report.getUserId());
+        incident.setVerifiedBy(moderator.getId());
+
+        incident.setLatitude(report.getLatitude());
+        incident.setLongitude(report.getLongitude());
+        incident.setCreatedAt(LocalDateTime.now());
+
+        repo.save(incident);
+
+        reportService.markAsVerified(report, incident);
+        historyService.logVerification(report, moderator, incident);
+        checkpointService.handleCheckpoint(report, incident);
+
+        return "Verified successfully";
     }
 
     // ✅ pagination بدل findAll — هذا كان السبب الرئيسي للبطء
@@ -93,19 +94,26 @@ public class IncidentService {
     @Transactional(readOnly = true)
     public Incident getIncidentById(int id) {
         return repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Incident not found: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Incident not found: " + id));
     }
 
     @Transactional
     public void deleteIncident(int id) {
-        if (!repo.existsById(id)) throw new RuntimeException("Incident not found: " + id);
+        if (!repo.existsById(id)) {
+            throw new NoSuchElementException("Incident not found: " + id);
+        }
         repo.deleteById(id);
     }
 
     @Transactional
     public Incident updateStatus(int id, String status) {
         Incident incident = getIncidentById(id);
-        incident.setStatus(status);
+
+        if (!List.of("OPEN", "CLOSED", "VERIFIED").contains(status)) {
+            throw new IllegalArgumentException("Invalid status value");
+        }
+
+        incident.setStatus(status); // 🔥 مهم
         return repo.save(incident);
     }
 
@@ -120,7 +128,10 @@ public class IncidentService {
     @Transactional(readOnly = true)
     public List<Incident> getByStatus(String status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return repo.findByStatusOrderByCreatedAtDesc(status, pageable).getContent();
+        if (!List.of("OPEN", "CLOSED", "VERIFIED").contains(status)) {
+            throw new IllegalArgumentException("Invalid status value");
+        }
+        return List.of();
     }
 
     private String mapType(String category) {
@@ -131,6 +142,4 @@ public class IncidentService {
             default -> "CLOSURE";
         };
     }
-
-
 }
