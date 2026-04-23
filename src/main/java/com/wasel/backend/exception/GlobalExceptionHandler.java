@@ -1,7 +1,6 @@
-
-
 package com.wasel.backend.exception;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -12,9 +11,12 @@ import java.util.NoSuchElementException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // =========================
+    // 404 - Not Found
+    // =========================
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<?> handleNotFound(NoSuchElementException ex) {
-        return ResponseEntity.status(404).body(
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of(
                         "status", 404,
                         "error", "Not Found",
@@ -23,9 +25,13 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<?> handleBadRequest(RuntimeException ex) {
-        return ResponseEntity.status(400).body(
+    // =========================
+    // 400 - Bad Request
+    // (validation / wrong input)
+    // =========================
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleBadRequest(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 Map.of(
                         "status", 400,
                         "error", "Bad Request",
@@ -34,9 +40,13 @@ public class GlobalExceptionHandler {
         );
     }
 
+    // =========================
+    // 500 - Internal Error
+    // (unexpected errors only)
+    // =========================
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGeneral(Exception ex) {
-        return ResponseEntity.status(500).body(
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 Map.of(
                         "status", 500,
                         "error", "Internal Server Error",

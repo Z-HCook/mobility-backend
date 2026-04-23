@@ -75,7 +75,7 @@ public class IncidentService {
         incident.setLongitude(report.getLongitude());
         incident.setCreatedAt(LocalDateTime.now());
 
-        repo.save(incident);
+        incident = repo.save(incident);
 
         reportService.markAsVerified(report, incident);
         historyService.logVerification(report, moderator, incident);
@@ -131,7 +131,7 @@ public class IncidentService {
         if (!List.of("OPEN", "CLOSED", "VERIFIED").contains(status)) {
             throw new IllegalArgumentException("Invalid status value");
         }
-        return List.of();
+        return repo.findByStatusOrderByCreatedAtDesc(status, pageable).getContent();
     }
 
     private String mapType(String category) {
