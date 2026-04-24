@@ -25,8 +25,8 @@ public class ReportController {
     @PostMapping
     public ResponseEntity<String> insertReport(@RequestBody InsertReportRequest reportRequest, HttpServletRequest request) {
 
-        Bucket bucket = rateLimitingService.resolveBucket(request.getRemoteAddr());
-
+        String key = request.getRemoteAddr() + ":" + reportRequest.userId;
+        Bucket bucket = rateLimitingService.resolveBucket(key);
         if (bucket.tryConsume(1)) {
             var result = service.insertReport(reportRequest);
             return ResponseEntity.status(200).body(result);
