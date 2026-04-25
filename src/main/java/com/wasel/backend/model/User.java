@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")  // مطابق لجدولك في الداتابيس
-public class User {        // اسم الكلاس Capital Letter، convention في Java
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

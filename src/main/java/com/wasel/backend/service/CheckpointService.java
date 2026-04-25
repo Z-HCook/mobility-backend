@@ -36,7 +36,7 @@ public class CheckpointService {
     @CacheEvict(value = "checkpoints", allEntries = true)
     public String insertCheckpoint(InsertCheckpointRequest request) {
 
-        // ✅ نجيب المستخدم من التوكن
+
         String userId = (String) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
@@ -45,12 +45,12 @@ public class CheckpointService {
         User user = userRepository.findById(Integer.parseInt(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // ✅ تحقق انه admin
+
         if (!"admin".equalsIgnoreCase(user.getRole())) {
             throw new UnauthorizedException("Only admins can add checkpoints");
         }
 
-        // ✅ إنشاء checkpoint
+
         Checkpoint checkpoint = new Checkpoint();
         checkpoint.setName(request.getName());
         checkpoint.setLatitude(request.getLatitude());
@@ -120,5 +120,23 @@ public class CheckpointService {
         history.setInsAt(LocalDateTime.now());
 
         checkpointHistoryRepository.save(history);
+    }
+
+    public void handleCheckpoint(Report report, Incident incident) {
+
+        if (report.getLinkedCheckpointId() == null) return;
+
+        Checkpoint checkpoint = checkpointRepository
+                .findById(report.getLinkedCheckpointId())
+                .orElse(null);
+
+        if (checkpoint != null) {
+            CheckpointHistory history = new CheckpointHistory();
+            history.setCheckpoint(checkpoint);
+            history.setIncident(incident);
+            history.setInsAt(LocalDateTime.now());
+
+            checkpointHistoryRepository.save(history);
+        }
     }
 }

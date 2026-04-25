@@ -68,7 +68,7 @@ public class AlertService implements Alerts{
 
         switch (type) {
             case "closure":
-                return "CLOSURE"; // أو حسب المنطق تبعك
+                return "CLOSURE";
             case "accident":
                 return "ACCIDENT";
             case "weather":

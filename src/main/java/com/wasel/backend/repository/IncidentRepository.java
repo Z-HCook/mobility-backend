@@ -11,10 +11,10 @@ import java.util.List;
 
 public interface IncidentRepository extends JpaRepository<Incident, Integer> {
 
-    // ✅ Pagination + Sort بدل findAll
+
     Page<Incident> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
-    // ✅ Filter by status مع pagination
+
     Page<Incident> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
 
     @Query("SELECT i FROM Incident i WHERE i.createdAt >= :time")

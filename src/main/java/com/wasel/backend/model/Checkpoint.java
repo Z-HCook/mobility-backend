@@ -23,7 +23,7 @@ public class Checkpoint {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    // FK → users
+
     @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
@@ -31,7 +31,7 @@ public class Checkpoint {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // ===== Constructors =====
+
 
     public Checkpoint() {
     }
@@ -47,7 +47,7 @@ public class Checkpoint {
         this.createdAt = createdAt;
     }
 
-    // ===== Getters =====
+
 
     public int getId() {
         return id;
@@ -77,7 +77,7 @@ public class Checkpoint {
         return createdAt;
     }
 
-    // ===== Setters =====
+
 
     public void setId(int id) {
         this.id = id;

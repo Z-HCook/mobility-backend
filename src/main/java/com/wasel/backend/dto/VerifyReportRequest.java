@@ -4,7 +4,7 @@ public class VerifyReportRequest {
     private Integer reportId;
     private Integer moderatorId;
 
-    // constructors
+
     public VerifyReportRequest() {}
 
     public VerifyReportRequest(Integer reportId, Integer moderatorId) {
@@ -12,7 +12,7 @@ public class VerifyReportRequest {
         this.moderatorId = moderatorId;
     }
 
-    // getters & setters
+
     public Integer getReportId() {
         return reportId;
     }

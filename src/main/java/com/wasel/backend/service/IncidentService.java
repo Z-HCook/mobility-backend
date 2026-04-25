@@ -1,5 +1,6 @@
 package com.wasel.backend.service;
 
+import com.wasel.backend.dto.RouteRequest;
 import com.wasel.backend.dto.VerifyReportRequest;
 import com.wasel.backend.model.Incident;
 import com.wasel.backend.model.Report;
@@ -11,7 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class IncidentService {
@@ -82,7 +85,29 @@ public class IncidentService {
         }
     }
 
-    // ✅ pagination بدل findAll — هذا كان السبب الرئيسي للبطء
+    public int countIncidentsNearRouteEndpoints(RouteRequest request) {
+
+        LocalDateTime thirtyMinutesAgo = LocalDateTime.now().minusMinutes(30);
+
+        List<Incident> incidents = repo.findRecentIncidents(thirtyMinutesAgo);
+        Set<Incident> unique = new HashSet<>();
+
+        for (var i : incidents) {
+
+
+            double diststart = Incident.distance(request.getStartLat(), request.getStartLng(),
+                    i.getLatitude(), i.getLongitude());
+            double distend = Incident.distance(request.getEndLat(), request.getEndLng(),
+                    i.getLatitude(), i.getLongitude());
+
+            if (diststart < 3 || distend < 3) {
+                unique.add(i);
+            }
+        }
+
+        return unique.size();
+    }
+
     @Transactional(readOnly = true)
     public List<Incident> getAllIncidents(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);

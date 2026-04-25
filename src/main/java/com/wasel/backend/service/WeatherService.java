@@ -12,7 +12,7 @@ public class WeatherService {
     private final RestTemplate restTemplate;
     private final String API_KEY = "3b49dfc326c6f978b81e8b54210087fd";
 
-    // 🌟 Constructor injection للـ RestTemplate
+   
     public WeatherService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }

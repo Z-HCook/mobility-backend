@@ -17,9 +17,8 @@ import java.util.List;
 public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final UserRepository userRepository; // 2. تعريف الريبوزتوري
+    private final UserRepository userRepository;
 
-    // 3. تحديث الـ Constructor ليحتوي على الـ UserRepository
     public SubscriptionService(SubscriptionRepository subscriptionRepository, UserRepository userRepository) {
         this.subscriptionRepository = subscriptionRepository;
         this.userRepository = userRepository;
@@ -28,7 +27,7 @@ public class SubscriptionService {
     @Transactional
     @CacheEvict(value = "subscribers", allEntries = true)
     public Subscriptions createSubscription(SubscriptionRequest request) {
-        // (إضافي) يفضل أيضاً التحقق من وجود المستخدم عند إنشاء اشتراك
+
         if (!userRepository.existsById(request.getUserId())) {
             throw new RuntimeException("User not found");
         }

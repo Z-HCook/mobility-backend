@@ -23,7 +23,6 @@ public class ReportService {
     private final UserRepository userRepository;
     private final UserActivityRepository activityRepository;
 
-    // ✅ FIX 1: حذفنا  "Incident incident = null"  اللي كانت تسبب NullPointerException
 
     public ReportService(
             ReportRepository reportRepository,

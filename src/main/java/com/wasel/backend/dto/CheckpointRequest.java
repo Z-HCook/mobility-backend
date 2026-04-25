@@ -8,7 +8,7 @@ public class CheckpointRequest {
     private String description;
     private int createdBy;
 
-    // getters & setters
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 

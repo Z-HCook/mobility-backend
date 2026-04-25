@@ -9,7 +9,6 @@ import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,7 +47,7 @@ public class IncidentController {
         return ResponseEntity.ok(service.verifyReport(request));
     }
 
-    // ✅ pagination بدل findAll
+
     @GetMapping
     public ResponseEntity<List<Incident>> getAll(
             @RequestParam(defaultValue = "0") int page,

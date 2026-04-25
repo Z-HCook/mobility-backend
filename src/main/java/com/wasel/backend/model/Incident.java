@@ -10,7 +10,7 @@ public class Incident {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id; // استخدمنا Integer للسماح بـ null قبل الحفظ
+    private Integer id;
 
     @Column(name = "checkpoint_id")
     @JsonProperty("checkpointId")
@@ -22,13 +22,13 @@ public class Incident {
     private String description;
 
     @Column(nullable = false)
-    private String type; // مثل: ROAD_CLOSURE, ACCIDENT
+    private String type;
 
     @Column(nullable = false)
-    private String severity; // مثل: LOW, MEDIUM, HIGH
+    private String severity;
 
     @Column(nullable = false)
-    private String status; // مثل: PENDING, VERIFIED
+    private String status;
 
     @Column(name = "reported_by", nullable = false)
     @JsonProperty("reportedBy")

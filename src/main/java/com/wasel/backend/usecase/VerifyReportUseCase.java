@@ -1,7 +1,6 @@
 package com.wasel.backend.usecase;
 
 import com.wasel.backend.dto.VerifyReportRequest;
-import com.wasel.backend.service.IncidentService;
 import org.springframework.stereotype.Component;
 
 @Component
