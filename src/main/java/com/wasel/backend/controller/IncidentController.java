@@ -7,6 +7,7 @@ import com.wasel.backend.service.RateLimitingService;
 import com.wasel.backend.usecase.VerifyReportUseCase;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +48,7 @@ public class IncidentController {
         return ResponseEntity.ok(service.verifyReport(request));
     }
 
-
+    @Cacheable(value = "incidents", key = "#page + '-' + #size")
     @GetMapping
     public ResponseEntity<List<Incident>> getAll(
             @RequestParam(defaultValue = "0") int page,
@@ -58,6 +59,15 @@ public class IncidentController {
     @GetMapping("/{id}")
     public ResponseEntity<Incident> getById(@PathVariable int id) {
         return ResponseEntity.ok(service.getIncidentById(id));
+    }
+
+    @Cacheable(value = "incidents", key = "'category-' + #category")
+    @GetMapping("/category")
+    public ResponseEntity<List<Incident>> getByCategory(
+            @RequestParam String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(service.getByCategory(category, page, size));
     }
 
     @PutMapping("/{id}/status")

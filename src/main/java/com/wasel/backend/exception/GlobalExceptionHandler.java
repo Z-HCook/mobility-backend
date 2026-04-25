@@ -40,8 +40,10 @@ public class GlobalExceptionHandler {
         return buildResponse(ex.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGeneral(Exception ex) {
-        return buildResponse("Something went wrong 500", HttpStatus.INTERNAL_SERVER_ERROR);
+        ex.printStackTrace();
+        return ResponseEntity.status(500).body(ex.getMessage());
     }
 }

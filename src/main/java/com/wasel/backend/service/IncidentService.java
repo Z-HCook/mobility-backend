@@ -109,6 +109,12 @@ public class IncidentService {
     }
 
     @Transactional(readOnly = true)
+    public List<Incident> getByCategory(String category, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return repo.findByTypeOrderByCreatedAtDesc(mapType(category), pageable).getContent();
+    }
+
+    @Transactional(readOnly = true)
     public List<Incident> getAllIncidents(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return repo.findAllByOrderByCreatedAtDesc(pageable).getContent();

@@ -19,4 +19,6 @@ public interface IncidentRepository extends JpaRepository<Incident, Integer> {
 
     @Query("SELECT i FROM Incident i WHERE i.createdAt >= :time")
     List<Incident> findRecentIncidents(LocalDateTime time);
+
+    Page<Incident> findByTypeOrderByCreatedAtDesc(String type, Pageable pageable);
 }
