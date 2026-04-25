@@ -178,7 +178,27 @@ public class ReportService {
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
+    public Report getReport(Integer reportId) {
+        return reportRepository.findById(reportId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Report not found: " + reportId)
+                );
+    }
+
+    public void validate(Report report) {
+        if (!"pending".equalsIgnoreCase(report.getStatus())) {
+            throw new BusinessRuleException("Report already verified or processed");
+        }
+    }
+
+    @jakarta.transaction.Transactional
+    public void markAsVerified(Report report, Incident incident) {
+        report.setStatus("verified");
+        report.setUpdatedAt(LocalDateTime.now());
 
 
+        report.setLinkedIncidentId(incident.getId());
 
+        reportRepository.save(report);
+    }
 }

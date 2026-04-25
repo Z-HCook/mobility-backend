@@ -17,16 +17,16 @@ import java.util.List;
 public class IncidentService {
 
     private final IncidentRepository repo;
-    private final InsertReportService reportService;
+    private final ReportService reportService;
     private final UserService userService;
     private final CheckpointService checkpointService;
-    private final CheckpointHistoryService historyService;
+    private final CheckpointService historyService;
 
     public IncidentService(IncidentRepository repo,
-                           InsertReportService reportService,
+                           ReportService reportService,
                            UserService userService,
                            CheckpointService checkpointService,
-                           CheckpointHistoryService historyService) {
+                           CheckpointService historyService) {
         this.repo = repo;
         this.reportService = reportService;
         this.userService = userService;
@@ -130,5 +130,6 @@ public class IncidentService {
             default        -> "CLOSURE";
         };
     }
+
 
 }
