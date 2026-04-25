@@ -4,9 +4,7 @@ import com.wasel.backend.dto.CheckpointRequest;
 import com.wasel.backend.dto.InsertCheckpointRequest;
 import com.wasel.backend.exception.ResourceNotFoundException;
 import com.wasel.backend.exception.UnauthorizedException;
-import com.wasel.backend.model.Checkpoint;
-import com.wasel.backend.model.CheckpointHistory;
-import com.wasel.backend.model.User;
+import com.wasel.backend.model.*;
 import com.wasel.backend.repository.CheckpointHistoryRepository;
 import com.wasel.backend.repository.CheckpointRepository;
 import com.wasel.backend.repository.UserRepository;
@@ -103,5 +101,24 @@ public class CheckpointService {
         }
 
         return history;
+    }
+
+
+    public void logVerification(Report report, User moderator, Incident incident) {
+
+        if (report.getLinkedCheckpointId() == null) {
+            return;
+        }
+
+        Checkpoint checkpoint = checkpointRepository
+                .findById(report.getLinkedCheckpointId())
+                .orElseThrow(() -> new RuntimeException("Checkpoint not found"));
+
+        CheckpointHistory history = new CheckpointHistory();
+        history.setCheckpoint(checkpoint);
+        history.setIncident(incident);
+        history.setInsAt(LocalDateTime.now());
+
+        checkpointHistoryRepository.save(history);
     }
 }
