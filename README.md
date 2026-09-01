@@ -1,69 +1,170 @@
-Wasel Palestine — Smart Mobility & Checkpoint Intelligence Platform
-1. System Overview
-Wasel Palestine is an API-centric smart mobility platform designed to navigate daily movement challenges by providing reliable mobility intelligence.
+# 🚗 Wasel Palestine — Smart Mobility & Checkpoint Intelligence Platform
 
-2. Technical Stack
-Language: Java 21
+An API-centric backend platform designed to provide reliable mobility intelligence for navigating daily movement challenges in Palestine.
 
-Framework: Spring Boot 3
+---
 
-Database: PostgreSQL (Supabase)
+## 📌 Overview
 
-API Documentation: API-Dog
+Wasel Palestine is a backend-focused platform that provides structured mobility information through versioned RESTful APIs (`/api/v1/...`).
 
-Performance Testing: k6 by Grafana
+The system is designed to serve mobile applications, web dashboards, and other clients while focusing on real-world backend engineering concerns such as security, scalability, performance, caching, and maintainability.
 
-Deployment: Docker
+---
 
-3. Architecture & Database
-Architecture
+## ✨ Key Features
 
-+-----------------------------------------------------------+
-|                  Wasel Palestine Architecture              |
-+-----------------------------------------------------------+
-|           |                                               |
-+-----------|-----------------------------------------------+
-|  [Spring Boot 3 / Java 21]                                |
-|  +-----------------------------------------------------+  |
-|  |  Controller Layer (API Endpoints)                   |  |
-|  +-----------------------------------------------------+  |
-|  |  Use-Case / Service Layer (Business Logic)          |  |
-|  +-----------------------------------------------------+  |
-|  |  Repository Layer (Spring Data JPA)                 |  |
-|  +-----------------------------------------------------+  |
-|  |  [Security: JWT Filter]    [Config: Cache/External] |  |
-|  +-----------------------------------------------------+  |
-+-----------|-----------------------------------------------+
-            |
-            v (JDBC / SQL)
-+-----------------------------------------------------------+
-|  [Supabase / PostgreSQL Database (Cloud)]                 |
-+-----------------------------------------------------------+
+* 🚧 **Incident & Checkpoint Management** — Manage mobility incidents and checkpoint status updates.
+* 🔔 **Subscriptions** — Subscribe to checkpoint updates and get real-time mobility alerts.
+* 🔐 **JWT Authentication** — Secure access using Access & Refresh Tokens.
+* ⚡ **Caching** — Enhance API latency and reduce database hits using Caffeine.
+* 🚦 **Rate Limiting** — Protect endpoints from excessive traffic using Bucket4j.
 
-Database Schema (ERD)
-<img width="1434" height="765" alt="ERD" src="https://github.com/user-attachments/assets/f29457c6-d552-45f6-a29b-3882c23337da" />
+---
 
-4. API Design
-All endpoints are versioned (/api/v1/...). Security is implemented using JWT (Access + Refresh tokens).
+## 🛠️ Tech Stack
 
-[Link to API-Dog Documentation]
+| Technology                | Purpose                                   |
+| :------------------------ | :---------------------------------------- |
+| **Java 21**               | Primary programming language              |
+| **Spring Boot 3**         | Application framework & REST APIs         |
+| **PostgreSQL / Supabase** | Relational cloud database                 |
+| **Spring Data JPA**       | ORM & data persistence layer              |
+| **Spring Security + JWT** | Role-based authorization & authentication |
+| **Caffeine**              | In-memory application caching             |
+| **Bucket4j**              | API rate limiting & throttling            |
+| **Docker**                | Containerized deployment                  |
+| **k6**                    | Performance & load testing                |
+| **Apidog**                | API documentation & testing               |
 
-5. Performance Load Testing (k6)
-We evaluated the system under 5 scenarios:
+---
 
-Read-Heavy: Incident listing optimization (p95 < 5ms).
+## 🏗️ Architecture
 
-Write-Heavy: Subscription service stability.
+The application follows a clean layered architecture:
 
-Mixed Workload: Throughput & cache hit rate analysis.
+```text
+Client Applications (Mobile / Web)
+  │
+  ▼
+REST API (/api/v1)
+  │
+  ▼
+Spring Security + JWT Filter
+  │
+  ▼
+Controller Layer (API Endpoints)
+  │
+  ▼
+Service Layer (Business Logic + Caching / Rate Limiting)
+  │
+  ▼
+Repository Layer (Spring Data JPA)
+  │
+  ▼
+PostgreSQL Database (Supabase Cloud)
+```
 
-Spike Testing: Stress testing at 200 VUs.
+---
 
-Soak Testing: Sustained load resilience.
+## 🗄️ Database
 
-Refer to the full Performance_Report.pdf in the repository.
+Wasel Palestine relies on PostgreSQL, hosted on Supabase, with Spring Data JPA managing relational queries.
 
-6. Development Workflow
-Git Strategy: Feature branching with mandatory Pull Requests.
+### 📐 Entity Relationship Diagram (ERD)
 
-CI/CD: Dockerized environment for seamless deployment.
+<img width="1434" height="765" alt="Wasel Palestine ERD" src="https://github.com/user-attachments/assets/f29457c6-d552-45f6-a29b-3882c23337da" />
+
+---
+
+## 🔐 API Design & Documentation
+
+All endpoints are versioned using:
+
+```text
+/api/v1/...
+```
+
+Security is implemented using **JWT (Access + Refresh Tokens)**.
+
+📖 **[View API Documentation](https://ee1ys8ldya.apidog.io)**
+
+---
+
+## 📊 Performance Testing
+
+The backend was evaluated using **k6 by Grafana** under five workload scenarios:
+
+* **Read-heavy workloads** — Incident listing optimization.
+* **Write-heavy workloads** — Subscription service stability.
+* **Mixed workloads** — Throughput and cache hit rate analysis.
+* **Spike testing** — Stress testing at up to **200 Virtual Users (VUs)**.
+* **Soak testing** — Sustained-load resilience.
+
+One of the read-heavy tests achieved **p95 latency below 5 ms**.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+* Java 21
+* Maven
+* Active PostgreSQL / Supabase connection credentials
+* Docker
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/Z-HCook/mobility-backend.git
+cd mobility-backend
+```
+
+### Run the Application
+
+**Linux / macOS:**
+
+```bash
+./mvnw spring-boot:run
+```
+
+**Windows:**
+
+```bash
+mvnw.cmd spring-boot:run
+```
+
+> **Note:** Set up the required database and JWT environment variables in your local application configuration before launching the application.
+
+---
+
+## 🌿 Development Workflow
+
+**Git Strategy:** Feature branches with Pull Request reviews.
+
+**Commit Conventions:** Descriptive and standardized commit messages.
+
+**Deployment:** Dockerized environment for consistent deployment.
+
+---
+
+## 👥 Team
+
+**Advanced Software Engineering — Spring 2026**
+**An-Najah National University**
+
+**Supervisor:** Dr. Amjad AbuHassan
+
+### Team Members
+
+* **Khadejah Al-Etyani**
+* **Dana Ismail**
+* **Zeina Hanani**
+* **Masa Kanaze'**
+
+---
+
+## 🔗 Repository
+
+**[Wasel Palestine — Backend GitHub Repository](https://github.com/Z-HCook/mobility-backend)**
